@@ -77,7 +77,7 @@ export default function Archive({ items }: { items: ArchiveItem[] }) {
       </div>
 
       {/* Barra de filtros */}
-      <div className="sticky top-0 z-20 -mx-5 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-ink/20 bg-paper/95 px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] backdrop-blur md:-mx-8 md:px-8">
+      <div className="sticky top-[4.75rem] z-20 -mx-5 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-ink/20 bg-paper/95 px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] backdrop-blur md:-mx-8 md:px-8">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Tipo">
           <Chip active={kind === "all"} onClick={() => setKind("all")}>
             Todo <sup>{items.length}</sup>

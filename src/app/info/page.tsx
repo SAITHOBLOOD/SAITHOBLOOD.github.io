@@ -16,10 +16,10 @@ export default function Info() {
         {/* Escalera 3D fija a la izquierda (arriba en móvil) */}
         <div className="relative h-[60svh] md:sticky md:top-0 md:h-[100svh]">
           <InfoStage />
-          <p className="pointer-events-none absolute bottom-5 left-5 font-mono text-[10px] uppercase tracking-[0.25em] md:left-8">subir no lleva a ningún lado — y aun así</p>
+          <p className="tag pointer-events-none absolute bottom-5 left-5 text-[10px] md:left-8">subir no lleva a ningún lado — y aun así</p>
         </div>
 
-        <div className="paper-grain px-5 pb-24 pt-10 md:px-10 md:pt-32">
+        <div className="paper-grain px-5 pb-24 pt-10 md:px-10 md:pt-36">
           <p className="font-mono text-[11px] uppercase tracking-[0.25em]">{site.role} · {site.city}</p>
           <h1 className="mt-4 font-display text-[18vw] italic leading-[0.8] md:text-[8vw]">{site.name}</h1>
 

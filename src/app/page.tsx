@@ -7,6 +7,7 @@ import SmoothScroll from "@/components/dom/SmoothScroll";
 import Archive, { type ArchiveItem } from "@/components/dom/Archive";
 import HoverCaption from "@/components/dom/HoverCaption";
 import SiteFooter from "@/components/dom/SiteFooter";
+import Marquee from "@/components/dom/Marquee";
 
 export default function Home() {
   const projects = getProjects();
@@ -36,27 +37,48 @@ export default function Home() {
       {/* HERO 3D */}
       <section className="relative h-[100svh] overflow-hidden bg-ink">
         <HomeStage projects={orbit} videos={videos} />
-        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end p-5 text-paper md:p-8">
+
+        {/* Velos de tinta: el texto siempre descansa sobre oscuro, sin tapar el ojo */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-36 bg-gradient-to-b from-ink/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[58%] bg-gradient-to-t from-ink via-ink/75 to-transparent" />
+
+        {/* Marcas de registro de imprenta + texto vertical */}
+        <div className="pointer-events-none absolute inset-y-0 left-3 z-10 hidden items-center text-paper/60 md:flex">
+          <span className="reg-mark" />
+        </div>
+        <div className="pointer-events-none absolute inset-y-0 right-3 z-10 hidden flex-col items-center justify-center gap-6 text-paper/60 md:flex">
+          <span className="reg-mark" />
+          <span className="tag text-[10px] [writing-mode:vertical-rl]">
+            {site.city} · Nº 001—{String(stats.total).padStart(3, "0")}
+          </span>
+        </div>
+
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end px-5 pb-5 text-paper md:px-12 md:pb-8">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.25em]">{site.role}</p>
-              <h1 className="font-display text-[22vw] italic leading-[0.78] md:text-[13vw]">{site.name}</h1>
+              <p className="tag mb-4">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-paper" /> {site.role}
+              </p>
+              <h1 className="text-halo font-display text-[21vw] italic leading-[0.8] md:text-[12.5vw]">{site.name}</h1>
             </div>
-            <HoverCaption items={orbit} className="text-right" />
+            <HoverCaption items={orbit} className="md:mb-6" />
           </div>
-          <div className="mt-6 flex items-center justify-between border-t border-paper/60 pt-3 font-mono text-[10px] uppercase tracking-[0.25em]">
-            <span>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-paper/40 pt-4">
+            <span className="tag">
               {stats.total} obras · {stats.from}–{stats.to}
             </span>
-            <a href="#archivo" className="pointer-events-auto ink-link">
-              Archivo ↓
+            <span className="hidden font-mono text-[10px] uppercase tracking-[0.3em] text-paper/80 md:block">mueve el cursor — el ojo te sigue</span>
+            <a href="#archivo" className="tag tag-invert pointer-events-auto transition-transform hover:-translate-y-0.5">
+              Ver archivo ↓
             </a>
           </div>
         </div>
       </section>
 
+      <Marquee items={["Ilustración", "Animación", "Bocetos", "Tinta sobre papel", site.city, `${stats.total} obras`, site.name]} />
+
       {/* STATEMENT + PUERTA AL PASILLO */}
-      <section className="paper-grain relative z-10 grid gap-10 border-t border-ink bg-paper px-5 py-24 text-ink md:grid-cols-[1fr_auto] md:items-end md:px-8">
+      <section className="paper-grain relative z-10 grid gap-10 bg-paper px-5 py-24 text-ink md:grid-cols-[1fr_auto] md:items-end md:px-8">
         <p className="max-w-4xl font-display text-3xl leading-tight md:text-5xl">{site.statement}</p>
         <Link href="/pasillo" className="group flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.25em]">
           <span className="relative block h-28 w-16 border-2 border-ink transition-transform duration-500 group-hover:[transform:perspective(300px)_rotateY(-35deg)]" style={{ transformOrigin: "left" }} />

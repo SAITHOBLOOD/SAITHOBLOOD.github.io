@@ -32,9 +32,12 @@ body {
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.paper-grain > * {
-  position: relative;
-  z-index: 1;
+/* En capa base para que utilidades como `sticky`/`absolute` puedan sobrescribirla */
+@layer base {
+  .paper-grain > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* Subrayado que se entinta de izquierda a derecha */
@@ -87,3 +90,67 @@ body {
 }
 
 
+
+/* ───────── Sistema de etiquetas: todo texto sobre imagen lleva su propio fondo ───────── */
+@layer components {
+  /* Etiqueta impresa: tinta + papel, se lee sobre cualquier fondo */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border: 1px solid color-mix(in srgb, var(--color-paper) 28%, transparent);
+    padding: 0.45em 0.75em;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    line-height: 1;
+    box-shadow: 3px 3px 0 color-mix(in srgb, var(--color-ink) 35%, transparent);
+  }
+  .tag-invert {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    border-color: var(--color-ink);
+  }
+}
+
+/* Halo de tinta para títulos grandes sobre imagen */
+.text-halo {
+  text-shadow:
+    0 0 48px rgb(10 10 10 / 0.9),
+    0 0 18px rgb(10 10 10 / 0.7),
+    0 3px 2px rgb(10 10 10 / 0.5);
+}
+
+/* Cinta en movimiento */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 38s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Marca de registro de imprenta (⊕) */
+.reg-mark {
+  width: 22px;
+  height: 22px;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  background:
+    linear-gradient(currentColor, currentColor) center / 1px 34px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 34px 1px no-repeat;
+  overflow: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
