@@ -24,7 +24,10 @@ export default function PasilloClient({ projects }: { projects: CoverItem[] }) {
       <div className="pointer-events-none fixed inset-0 z-10 flex flex-col justify-end p-4 text-paper md:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col items-start gap-2">
-            <span className="tag opacity-80">desplaza para atravesar las puertas ↓</span>
+            <span className="tag opacity-80">
+              <span className="md:hidden">desliza para avanzar ↓</span>
+              <span className="hidden md:inline">desplaza para atravesar las puertas ↓</span>
+            </span>
             {current && (
               <span className="tag tag-invert">
                 {catalogCode(current)} · {displayTitle(current)}
@@ -36,14 +39,14 @@ export default function PasilloClient({ projects }: { projects: CoverItem[] }) {
           </div>
           <HoverCaption items={projects} />
         </div>
-        <div className="tag pointer-events-auto mt-3 flex-wrap gap-0 self-start p-0" role="group" aria-label="Filtrar por tipo">
+        <div className="tag pointer-events-auto mt-3 max-w-full gap-0 self-start overflow-x-auto p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="Filtrar por tipo">
           {(["all", ...kinds] as const).map((k, i) => (
             <button
               key={k}
               type="button"
               onClick={() => setKind(k)}
               aria-pressed={kind === k}
-              className={`px-3 py-2.5 uppercase transition-colors ${i ? "border-l border-paper/25" : ""} ${kind === k ? "bg-paper text-ink" : "hover:bg-paper/15"}`}
+              className={`shrink-0 whitespace-nowrap px-3 py-2.5 uppercase transition-colors ${i ? "border-l border-paper/25" : ""} ${kind === k ? "bg-paper text-ink" : "hover:bg-paper/15"}`}
             >
               {k === "all" ? "Todo" : KIND_LABEL[k]}
             </button>

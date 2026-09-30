@@ -67,7 +67,7 @@ export default function Home() {
             <span className="tag">
               {stats.total} obras · {stats.from}–{stats.to}
             </span>
-            <span className="hidden font-mono text-[10px] uppercase tracking-[0.3em] text-paper/80 md:block">mueve el cursor — el ojo te sigue</span>
+            <span className="hidden font-mono text-[10px] uppercase tracking-[0.3em] text-paper/80 md:pointer-fine:block">mueve el cursor — el ojo te sigue</span>
             <a href="#archivo" className="tag tag-invert pointer-events-auto transition-transform hover:-translate-y-0.5">
               Ver archivo ↓
             </a>

@@ -105,8 +105,9 @@ export default function TimelapsePlayer({ media, title }: { media: ProcessMedia;
       </div>
 
       {/* Controles */}
-      <div className="mt-3 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.18em]">
-        <button type="button" onClick={() => setPlaying((p) => !p)} className="w-6 text-left" aria-label={playing ? "Pausar" : "Reproducir"}>
+      {/* En celular la barra va sola en una fila (área táctil grande); en escritorio, todo en línea */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] sm:flex-nowrap">
+        <button type="button" onClick={() => setPlaying((p) => !p)} className="order-2 h-8 w-8 text-left sm:order-none sm:h-auto sm:w-6" aria-label={playing ? "Pausar" : "Reproducir"}>
           {playing ? "❚❚" : "▶"}
         </button>
         <div
@@ -127,18 +128,18 @@ export default function TimelapsePlayer({ media, title }: { media: ProcessMedia;
           }}
           onPointerMove={(e) => scrubbing.current && onTrack(e)}
           onPointerUp={() => (scrubbing.current = false)}
-          className="relative h-5 flex-1 cursor-ew-resize"
+          className="relative order-1 h-9 w-full cursor-ew-resize touch-none sm:order-none sm:h-5 sm:w-auto sm:flex-1"
         >
           <div className="absolute inset-x-0 top-1/2 h-px bg-ink/30" />
           <div className="ink-track absolute left-0 top-1/2 h-[3px] -translate-y-1/2 bg-ink" style={{ width: `${progress * 100}%` }} />
           <div className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink" style={{ left: `${progress * 100}%` }} />
         </div>
-        <span className="tabular-nums">
+        <span className="order-3 tabular-nums sm:order-none">
           {fmt(progress * duration)} / {fmt(duration)}
         </span>
-        <div className="flex gap-1">
+        <div className="order-4 ml-auto flex gap-1 sm:order-none sm:ml-0">
           {RATES.map((r) => (
-            <button key={r} type="button" onClick={() => setRate(r)} className={`px-1.5 ${rate === r ? "bg-ink text-paper" : ""}`}>
+            <button key={r} type="button" onClick={() => setRate(r)} className={`px-2 py-1.5 sm:px-1.5 sm:py-0 ${rate === r ? "bg-ink text-paper" : ""}`}>
               {r}×
             </button>
           ))}

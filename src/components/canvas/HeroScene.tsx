@@ -12,6 +12,7 @@ import { IrisMaterial } from "@/shaders/irisMaterial";
 import { VideoBackdropMaterial, VideoEyeMaterial } from "@/shaders/videoEyeMaterial";
 import { scrollState } from "@/lib/scroll-state";
 import { uiStore } from "@/lib/ui-store";
+import { lerp, portraitFactor } from "@/lib/responsive";
 import { done, pending } from "@/lib/loading";
 import type { CoverItem } from "@/content/types";
 import WorkPlane from "./WorkPlane";
@@ -48,14 +49,21 @@ export default function HeroScene({ projects, videos = {} }: { projects: CoverIt
   const router = useRouter();
   const ring = useRef<Group>(null);
   const orbit = projects.slice(0, 7);
+  // Responsive: en pantallas verticales la cámara se aleja, el ojo sube y la órbita se cierra
+  const size = useThree((s) => s.size);
+  const pf = portraitFactor(size.width, size.height);
+  const aspect = size.width / Math.max(1, size.height);
+  const radius = lerp(4.6, 2.5, pf);
 
   useFrame((state, dt) => {
     const p = Math.min(1, scrollState.offset / window.innerHeight);
     const cam = state.camera;
+    const baseZ = Math.max(7, 5.2 / aspect); // el ojo ocupa ~60 % del ancho en vertical
+    const yOff = -1.4 * pf; // cámara y mirada más abajo → el ojo queda arriba, lejos del título
     cam.position.x = MathUtils.damp(cam.position.x, state.pointer.x * 0.6, 2, dt);
-    cam.position.y = MathUtils.damp(cam.position.y, state.pointer.y * 0.4 + p * 1.5, 2, dt);
-    cam.position.z = MathUtils.damp(cam.position.z, 7 + p * 4, 3, dt);
-    cam.lookAt(0, p * 0.8, 0);
+    cam.position.y = MathUtils.damp(cam.position.y, state.pointer.y * 0.4 + p * 1.5 + yOff, 2, dt);
+    cam.position.z = MathUtils.damp(cam.position.z, baseZ + p * 4, 3, dt);
+    cam.lookAt(0, p * 0.8 + yOff, 0);
     if (ring.current) ring.current.rotation.y += dt * 0.06 + scrollState.velocity * 0.0004;
   });
 
@@ -73,12 +81,12 @@ export default function HeroScene({ projects, videos = {} }: { projects: CoverIt
       ) : (
         <Eye />
       )}
-      <FloatingDoors />
+      <FloatingDoors spread={lerp(1, 0.45, pf)} />
       <group ref={ring} rotation={[0.28, 0, 0]}>
         {orbit.map((proj, i) => {
           const a = (i / orbit.length) * Math.PI * 2;
           return (
-            <Billboard key={proj.slug} position={[Math.cos(a) * 4.6, Math.sin(i * 1.7) * 0.5 - 0.4, Math.sin(a) * 4.6]}>
+            <Billboard key={proj.slug} position={[Math.cos(a) * radius, Math.sin(i * 1.7) * 0.5 - 0.4, Math.sin(a) * radius]}>
               <WorkPlane
                 media={proj.cover}
                 maxW={1.1}
@@ -163,16 +171,16 @@ function Eye({ video }: { video?: string }) {
   );
 }
 
-function FloatingDoors() {
+function FloatingDoors({ spread = 1 }: { spread?: number }) {
   const doors = useMemo(
     () =>
       Array.from({ length: 6 }, (_, i) => ({
-        pos: [Math.cos(i * 1.9) * (5 + (i % 3)), Math.sin(i * 2.3) * 2.2, -2 - (i % 4) * 1.5] as [number, number, number],
+        pos: [Math.cos(i * 1.9) * (5 + (i % 3)) * spread, Math.sin(i * 2.3) * (2.2 + (1 - spread) * 3), -2 - (i % 4) * 1.5] as [number, number, number],
         rot: i * 0.7,
         speed: 0.1 + (i % 3) * 0.05,
         scale: 0.6 + (i % 3) * 0.25,
       })),
-    [],
+    [spread],
   );
   const refs = useRef<(Group | null)[]>([]);
   useFrame((state) => {

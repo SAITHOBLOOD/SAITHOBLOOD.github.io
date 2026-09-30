@@ -76,37 +76,47 @@ export default function Archive({ items }: { items: ArchiveItem[] }) {
         </p>
       </div>
 
-      {/* Barra de filtros */}
-      <div className="sticky top-[4.75rem] z-20 -mx-5 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-ink/20 bg-paper/95 px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] backdrop-blur md:-mx-8 md:px-8">
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Tipo">
-          <Chip active={kind === "all"} onClick={() => setKind("all")}>
-            Todo <sup>{items.length}</sup>
-          </Chip>
-          {kinds.map(([k, n]) => (
-            <Chip key={k} active={kind === k} onClick={() => setKind(k)}>
-              {KIND_LABEL[k]} <sup>{n}</sup>
+      {/* Barra de filtros: en celular, una tira deslizable + buscador; en escritorio, todo en línea */}
+      <div className="sticky top-[3.75rem] z-20 -mx-5 flex flex-col gap-3 border-b border-ink/20 bg-paper/95 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] backdrop-blur md:top-[4.75rem] md:-mx-8 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:px-8 md:py-4">
+        <div className="-mx-5 flex items-center gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden">
+          <div className="flex shrink-0 gap-2" role="group" aria-label="Tipo">
+            <Chip active={kind === "all"} onClick={() => setKind("all")}>
+              Todo <sup>{items.length}</sup>
             </Chip>
-          ))}
+            {kinds.map(([k, n]) => (
+              <Chip key={k} active={kind === k} onClick={() => setKind(k)}>
+                {KIND_LABEL[k]} <sup>{n}</sup>
+              </Chip>
+            ))}
+          </div>
+          <select aria-label="Año" value={year} onChange={(e) => setYear(e.target.value === "all" ? "all" : Number(e.target.value))} className="shrink-0 border border-ink bg-transparent px-2 py-1 uppercase">
+            <option value="all">Todos los años</option>
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y > 0 ? y : "Sin fecha"}
+              </option>
+            ))}
+          </select>
+          <Chip active={withProcess} onClick={() => setWithProcess((v) => !v)}>
+            ▶ Con proceso
+          </Chip>
+          <div className="flex shrink-0 gap-2 md:hidden" role="group" aria-label="Vista">
+            <Chip active={view === "grid"} onClick={() => setView("grid")}>
+              Cuadrícula
+            </Chip>
+            <Chip active={view === "index"} onClick={() => setView("index")}>
+              Índice
+            </Chip>
+          </div>
         </div>
-        <select aria-label="Año" value={year} onChange={(e) => setYear(e.target.value === "all" ? "all" : Number(e.target.value))} className="border border-ink bg-transparent px-2 py-1 uppercase">
-          <option value="all">Todos los años</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y > 0 ? y : "Sin fecha"}
-            </option>
-          ))}
-        </select>
-        <Chip active={withProcess} onClick={() => setWithProcess((v) => !v)}>
-          ▶ Con proceso
-        </Chip>
         <input
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar Nº, título, técnica…"
-          className="min-w-[12rem] flex-1 border-b border-ink bg-transparent py-1 normal-case tracking-normal placeholder:text-ink/40 focus:outline-none"
+          className="w-full border-b border-ink bg-transparent py-1.5 text-base normal-case tracking-normal placeholder:text-ink/40 focus:outline-none md:w-auto md:min-w-[12rem] md:flex-1 md:text-[11px]"
         />
-        <div className="flex gap-2" role="group" aria-label="Vista">
+        <div className="hidden gap-2 md:flex" role="group" aria-label="Vista">
           <Chip active={view === "grid"} onClick={() => setView("grid")}>
             Cuadrícula
           </Chip>
@@ -135,7 +145,7 @@ export default function Archive({ items }: { items: ArchiveItem[] }) {
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={active} className={`border border-ink px-2.5 py-1 uppercase transition-colors ${active ? "bg-ink text-paper" : "hover:bg-ink/10"}`}>
+    <button type="button" onClick={onClick} aria-pressed={active} className={`shrink-0 whitespace-nowrap border border-ink px-2.5 py-1.5 uppercase transition-colors md:py-1 ${active ? "bg-ink text-paper" : "hover:bg-ink/10"}`}>
       {children}
     </button>
   );

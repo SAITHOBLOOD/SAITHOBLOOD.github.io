@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useRouter } from "next/navigation";
-import { MathUtils, type Group, type Mesh } from "three";
+import { MathUtils, type Group, type Mesh, type PerspectiveCamera } from "three";
+import { lerp, portraitFactor } from "@/lib/responsive";
 import { scrollState } from "@/lib/scroll-state";
 import { uiStore } from "@/lib/ui-store";
 import type { CoverItem } from "@/content/types";
@@ -41,6 +42,15 @@ export default function Corridor({ projects, onIndex }: { projects: CoverItem[];
   useFrame((state, dt) => {
     const cam = state.camera;
     cam.position.z = 5 - scrollState.offset * PX_TO_WORLD;
+    // Responsive: en vertical se abre el campo de visión y las obras se acercan al centro
+    const pf = portraitFactor(state.size.width, state.size.height);
+    const fov = lerp(50, 64, pf);
+    const pcam = cam as PerspectiveCamera;
+    if (Math.abs(pcam.fov - fov) > 0.1) {
+      pcam.fov = fov;
+      pcam.updateProjectionMatrix();
+    }
+    const offset = lerp(1.25, 0.72, pf);
     cam.position.x = MathUtils.damp(cam.position.x, state.pointer.x * 0.5, 3, dt);
     cam.position.y = MathUtils.damp(cam.position.y, state.pointer.y * 0.3, 3, dt);
     cam.rotation.z = MathUtils.damp(cam.rotation.z, -scrollState.velocity * 0.0015, 4, dt);
@@ -68,7 +78,7 @@ export default function Corridor({ projects, onIndex }: { projects: CoverItem[];
       if (art) {
         const side = idx % 2 === 0 ? -1 : 1;
         const open = MathUtils.smoothstep(rel, -4.5, -0.5);
-        art.position.x = side * (1.25 + open * 1.6);
+        art.position.x = side * (offset + open * 1.6);
         art.rotation.y = -side * (0.28 + open * 0.9);
       }
     }
