@@ -1,0 +1,21 @@
+{
+  "_comentario": "Ajustes manuales por slug (el slug aparece en la URL /proyecto/<slug>). Sirve para nombrar obras 'sin título', destacar o describir SIN renombrar archivos. Campos: title, year, kind, medium, description, tags, featured, hidden.",
+
+  "cecaelia": { "featured": true, "medium": "Tinta sobre papel" },
+  "buttergyal": { "featured": true, "medium": "Tinta sobre papel" },
+  "crowqueen": { "featured": true },
+  "el-caido": { "title": "El caído", "featured": true },
+  "the-home-we-made": { "title": "The Home We Made", "featured": true },
+  "queen": { "featured": true },
+  "ninjaxboy": { "featured": true },
+
+  "saith-fernando-on-instagram-lunch-time-a-normal-jpg": { "title": "Lunch Time" },
+  "burning-man-1-pt": { "title": "Burning Man (parte 1)" },
+  "burningman": { "title": "Burning Man" },
+  "burningman-7d2ac7": { "title": "Burning Man (versión 2)" },
+  "burningwings-final": { "title": "Burning Wings" },
+  "rainwindow-final": { "title": "Rain Window" },
+  "bosque-clip-2-0": { "title": "Bosque (clip 2.0)" },
+  "epet-prueba": { "title": "EPET" },
+  "animacion-profondos": { "title": "ProFondos" }
+}
