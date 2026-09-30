@@ -94,9 +94,11 @@ export default function GLStage({ children, fallback, className = "fixed inset-0
     <QualityProvider tier={tier}>
       <div ref={box} className={className} aria-hidden>
         <Canvas
+          eventSource={typeof document !== "undefined" ? document.body : undefined}
+          eventPrefix="client"
           dpr={dpr}
           flat
-          frameloop={visible ? "always" : "never"}
+          frameloop="always"
           gl={{ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false }}
           camera={{ fov: 45, near: 0.1, far: 100, position: [0, 0, 6], ...camera }}
         >

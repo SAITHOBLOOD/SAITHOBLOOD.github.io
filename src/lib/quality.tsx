@@ -44,19 +44,15 @@ export async function detectQuality(): Promise<Quality> {
 
   if (!hasWebGL2()) return "none";
 
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-  if (reducedMotion) return "none";
 
   try {
-    // En producción: auto-hospedar los benchmarks (`benchmarksURL: "/gpu-benchmarks"`)
-    // para no depender de unpkg.
     const gpu = await getGPUTier();
-    if (gpu.tier <= 1) return "low";
-    if (gpu.isMobile || saveData) return gpu.tier >= 3 ? "mid" : "low";
-    return gpu.tier >= 3 ? "high" : "mid";
+    if (gpu.tier <= 1) return "mid";
+    if (gpu.isMobile || saveData) return gpu.tier >= 3 ? "high" : "mid";
+    return gpu.tier >= 2 ? "high" : "mid";
   } catch {
-    return saveData ? "low" : "mid";
+    return saveData ? "mid" : "high";
   }
 }
 

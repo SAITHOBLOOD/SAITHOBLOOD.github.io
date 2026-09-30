@@ -244,8 +244,23 @@ function VideoEyeball({ src }: { src: string }) {
  * sin importar el scroll), con parallax sutil del cursor. Ignora la niebla.
  */
 function Backdrop({ src }: { src: string }) {
-  const tex = useVideoTexture(src, { muted: true, loop: true, playsInline: true, start: true, crossOrigin: "anonymous", unsuspend: "canplay" });
-  useEffect(() => done("hero-backdrop"), []);
+  const tex = useVideoTexture(src, { muted: true, loop: true, playsInline: true, start: true, crossOrigin: "anonymous", unsuspend: "loadedmetadata" });
+  useEffect(() => {
+    done("hero-backdrop");
+    const video = tex.image as HTMLVideoElement;
+    if (video) {
+      video.play().catch(() => {});
+      const resume = () => {
+        if (video.paused) video.play().catch(() => {});
+      };
+      window.addEventListener("pointerdown", resume, { once: true });
+      window.addEventListener("scroll", resume, { once: true });
+      return () => {
+        window.removeEventListener("pointerdown", resume);
+        window.removeEventListener("scroll", resume);
+      };
+    }
+  }, [tex]);
   const mesh = useRef<import("three").Mesh>(null);
   const mat = useRef<InstanceType<typeof VideoBackdropMaterial>>(null);
   const size = useThree((s) => s.size);
