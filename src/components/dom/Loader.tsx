@@ -102,8 +102,6 @@ function Hamster() {
   const turb = useRef<SVGFETurbulenceElement>(null);
 
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return;
     const id = setInterval(() => {
       setFrame((f) => f + 1);
       // "boiling lines": el trazo tiembla como en animación dibujada cuadro a cuadro
