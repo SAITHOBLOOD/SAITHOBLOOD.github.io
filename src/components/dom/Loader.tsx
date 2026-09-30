@@ -102,17 +102,31 @@ function Hamster() {
   const turb = useRef<SVGFETurbulenceElement>(null);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setFrame((f) => f + 1);
-      // "boiling lines": el trazo tiembla como en animación dibujada cuadro a cuadro
-      turb.current?.setAttribute("seed", String(Math.floor(Math.random() * 100)));
-    }, 1000 / FPS);
-    return () => clearInterval(id);
+    let animId: number;
+    let lastTime = performance.now();
+    const interval = 1000 / 14;
+
+    const loop = (now: number) => {
+      const elapsed = now - lastTime;
+      if (elapsed >= interval) {
+        lastTime = now - (elapsed % interval);
+        setFrame((f) => {
+          const next = f + 1;
+          if (next % 3 === 0 && turb.current) {
+            turb.current.setAttribute("seed", String((next * 17) % 100));
+          }
+          return next;
+        });
+      }
+      animId = requestAnimationFrame(loop);
+    };
+
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
   }, []);
 
   const pose = LEGS[frame % LEGS.length];
   const bob = frame % 2 === 0 ? 0 : -1.5;
-  const spin = (frame * 11.25) % 360; // la rueda gira en sentido horario (el hámster empuja hacia atrás)
 
   return (
     <svg viewBox="0 0 200 200" className="h-56 w-56 md:h-64 md:w-64" aria-hidden>
@@ -136,7 +150,7 @@ function Hamster() {
         {/* Rueda */}
         <circle cx="100" cy="95" r="70" strokeWidth="3" />
         <circle cx="100" cy="95" r="64" strokeWidth="1" />
-        <g transform={`rotate(${spin} 100 95)`} strokeWidth="1.2">
+        <g className="animate-hamster-wheel" strokeWidth="1.2">
           {Array.from({ length: 8 }, (_, i) => {
             const a = (i / 8) * Math.PI * 2;
             return <line key={i} x1={100} y1={95} x2={100 + Math.cos(a) * 64} y2={95 + Math.sin(a) * 64} />;
