@@ -38,7 +38,11 @@ export default function Thumb({
   }
 
   const set = media.srcSet;
-  const srcSet = set ? [`${set.sm} 480w`, set.ms && `${set.ms} 800w`, `${set.md} 1280w`].filter(Boolean).join(", ") : undefined;
+  // Los tamaños son del lado LARGO (sm 480 · ms 800 · md 1280) y width/height son los del md:
+  // el descriptor «w» debe ser el ancho real, si no las obras verticales se piden pequeñas y salen borrosas.
+  const long = Math.max(media.width, media.height);
+  const wOf = (side: number) => Math.round((media.width * side) / long);
+  const srcSet = set ? [`${set.sm} ${wOf(480)}w`, set.ms && `${set.ms} ${wOf(Math.min(800, long))}w`, `${set.md} ${media.width}w`].filter(Boolean).join(", ") : undefined;
   const hasColor = !!media.accent;
   // Posición del cursor para que el color florezca desde ahí
   const track = (e: React.PointerEvent<HTMLDivElement>) => {

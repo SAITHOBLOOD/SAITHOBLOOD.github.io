@@ -31,7 +31,7 @@ export default function Home() {
       videos: p.process.length,
       accent: accentOf(p) ?? strip.map((m) => (m.type === "image" ? m.accent : undefined)).find(Boolean),
       description: p.description,
-      strip: strip.slice(0, 6),
+      strip: strip.slice(0, 3),
     };
   });
   const archive: ArchiveItem[] = projects.map((p) => ({

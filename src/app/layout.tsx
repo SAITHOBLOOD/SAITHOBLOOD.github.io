@@ -9,7 +9,7 @@ const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["400"], styl
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400"], variable: "--font-plex-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://saithoblood.github.io"),
   title: { default: `${site.name} — ${site.role}`, template: `%s — ${site.name}` },
   description: site.statement,
 };

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { displayYear, KIND_LABEL, type ProjectKind, type ResultMedia } from "@/content/types";
 import Thumb from "./Thumb";
+import HScroll from "./HScroll";
 
 export interface ShowcaseItem {
   slug: string;
@@ -12,64 +13,68 @@ export interface ShowcaseItem {
   videos: number;
   accent?: string;
   description?: string;
+  /** Portada primero; las siguientes se asoman detrás como láminas apiladas. */
   strip: ResultMedia[];
 }
 
 /**
- * Proyectos (carpetas «Proyecto X» en Drive): filas editoriales sobre tinta, cada una con
- * una tira de película de sus piezas. Crece sola con cada carpeta nueva.
+ * Proyectos (carpetas «Proyecto X» en Drive): una fila compacta de tarjetas. Cada tarjeta es
+ * la portada con un par de piezas asomando detrás; el resto se ve al abrir el proyecto.
+ * Con muchos proyectos la fila se desliza (dedo, trackpad o flechas) en vez de crecer hacia abajo.
  */
 export default function ProjectsShowcase({ items }: { items: ShowcaseItem[] }) {
   if (!items.length) return null;
+  const pieces = items.reduce((n, i) => n + i.pieces, 0);
   return (
-    <section id="proyectos" className="relative z-10 bg-ink px-5 pb-24 pt-20 text-paper md:px-8">
-      <div className="flex flex-wrap items-end justify-between gap-6 border-b border-paper/30 pb-6">
-        <h2 className="font-display text-[18vw] italic leading-[0.8] md:text-[10vw]">Proyectos</h2>
-        <span className="tag">
-          {items.length} proyecto{items.length === 1 ? "" : "s"} · {items.reduce((n, i) => n + i.pieces, 0)} piezas
-        </span>
+    <section id="proyectos" className="relative z-10 bg-ink px-5 py-16 text-paper md:px-8 md:py-20">
+      <div className="grid gap-6 lg:grid-cols-[minmax(13rem,1fr)_minmax(0,3fr)] lg:gap-12">
+        <header className="flex flex-col justify-between gap-6 lg:border-r lg:border-paper/20 lg:py-8 lg:pr-10">
+          <div>
+            <h2 className="font-display text-6xl italic leading-[0.85] md:text-7xl">Proyectos</h2>
+            <p className="mt-5 max-w-xs font-display text-xl leading-snug text-paper/75">Series completas: ábrelas para ver todas sus piezas.</p>
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-paper/60">
+            {items.length} proyecto{items.length === 1 ? "" : "s"} · {pieces} piezas
+          </p>
+        </header>
+
+        <HScroll label="Proyectos">
+          {items.map((p, i) => (
+            <ProjectCard key={p.slug} p={p} i={i} />
+          ))}
+        </HScroll>
       </div>
-
-      <ol>
-        {items.map((p, i) => (
-          <li key={p.slug} className="border-b border-paper/20">
-            <Link href={`/proyecto/${p.slug}`} className="card group grid gap-6 py-10 md:grid-cols-[5rem_minmax(0,1fr)] md:gap-10">
-              <span className="font-mono text-sm tracking-[0.2em] text-paper/50">{String(i + 1).padStart(2, "0")}</span>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-baseline justify-between gap-4">
-                  <h3 className="font-display text-5xl leading-none transition-transform duration-500 group-hover:translate-x-2 md:text-7xl">{p.title}</h3>
-                  <p className="flex flex-wrap items-center gap-2">
-                    {p.accent && <span className="color-dot" style={{ background: p.accent }} title="Proyecto con color" />}
-                    <span className="tag">{KIND_LABEL[p.kind]}</span>
-                    <span className="tag">
-                      {p.photos > 0 && `${p.photos} foto${p.photos === 1 ? "" : "s"}`}
-                      {p.photos > 0 && p.videos > 0 && " · "}
-                      {p.videos > 0 && `${p.videos} video${p.videos === 1 ? "" : "s"}`}
-                    </span>
-                    {p.year > 0 && <span className="tag">{displayYear(p.year)}</span>}
-                  </p>
-                </div>
-                {p.description && <p className="mt-4 max-w-2xl font-display text-xl leading-snug text-paper/80">{p.description}</p>}
-
-                {/* Tira de película: se desliza con el dedo en celular */}
-                <div className="-mx-5 mt-8 flex gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:none] md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden">
-                  {p.strip.map((m, k) => (
-                    <div key={k} className="w-40 shrink-0 transition-transform duration-500 md:w-52" style={{ transitionDelay: `${k * 40}ms` }}>
-                      <Thumb media={m} alt="" sizes="(min-width: 768px) 13rem, 10rem" className="card-media border border-paper/10" />
-                    </div>
-                  ))}
-                  {p.pieces > p.strip.length && (
-                    <div className="grid w-28 shrink-0 place-items-center border border-dashed border-paper/30 font-mono text-[11px] uppercase tracking-[0.2em] text-paper/60">
-                      +{p.pieces - p.strip.length}
-                    </div>
-                  )}
-                </div>
-                <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.25em] text-paper/60 transition-colors group-hover:text-paper">Abrir proyecto →</p>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ol>
     </section>
+  );
+}
+
+function ProjectCard({ p, i }: { p: ShowcaseItem; i: number }) {
+  const [cover, ...rest] = p.strip;
+  if (!cover) return null;
+  return (
+    <li className="relative w-[68vw] max-w-[17rem] shrink-0 snap-start hover:z-10 sm:w-60">
+      <Link href={`/proyecto/${p.slug}`} className="card group block">
+        <div className="relative aspect-[4/5]">
+          {rest.slice(0, 2).map((m, k) => (
+            <div key={k} aria-hidden className={`deck-card deck-${k} absolute inset-0`}>
+              <Thumb media={m} alt="" sizes="15rem" className="h-full w-full border border-paper/15" />
+            </div>
+          ))}
+          <div className="absolute inset-0 shadow-[6px_6px_0_rgba(0,0,0,0.55)]">
+            <Thumb media={cover} alt="" sizes="(min-width: 640px) 15rem, 68vw" className="card-media h-full w-full border border-paper/25" />
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-baseline gap-3">
+          <span className="font-mono text-xs tracking-[0.2em] text-paper/50">{String(i + 1).padStart(2, "0")}</span>
+          <h3 className="min-w-0 truncate font-display text-3xl leading-tight transition-transform duration-500 group-hover:translate-x-1 md:text-4xl">{p.title}</h3>
+          {p.accent && <span className="color-dot shrink-0" style={{ background: p.accent }} title="Contiene piezas a color" />}
+        </div>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-paper/60 transition-colors group-hover:text-paper">
+          {KIND_LABEL[p.kind]} · {p.pieces} pieza{p.pieces === 1 ? "" : "s"}
+          {p.year > 0 && ` · ${displayYear(p.year)}`}
+        </p>
+      </Link>
+    </li>
   );
 }

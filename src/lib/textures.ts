@@ -40,10 +40,11 @@ export function loadMediaTexture(m: ResultMedia, size: TexSize = "md"): Promise<
       : Promise.resolve(plateTexture(m.seed, m.width, m.height));
 
   cache.set(k, p);
+  p.catch(() => cache.get(k) === p && cache.delete(k)); // si falla, se reintenta la próxima vez
   if (cache.size > MAX) {
     const [oldKey, old] = cache.entries().next().value!;
     cache.delete(oldKey);
-    old.then((t) => t.dispose());
+    old.then((t) => t.dispose()).catch(() => {});
   }
   return p;
 }

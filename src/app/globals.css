@@ -73,6 +73,22 @@ body {
   filter: url(#ink-liquid);
   transform: translate(1.5px, -1px) scale(1.03);
 }
+/* Proyectos: láminas apiladas detrás de la portada; al pasar el cursor se abren en abanico */
+.deck-card {
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.deck-0 {
+  transform: translate(6%, -3%) rotate(4deg) scale(0.95);
+}
+.deck-1 {
+  transform: translate(-6%, -2%) rotate(-5deg) scale(0.93);
+}
+.card:hover .deck-0 {
+  transform: translate(16%, -5%) rotate(9deg) scale(0.95);
+}
+.card:hover .deck-1 {
+  transform: translate(-16%, -4%) rotate(-10deg) scale(0.93);
+}
 @keyframes ink-in {
   from {
     opacity: 0;

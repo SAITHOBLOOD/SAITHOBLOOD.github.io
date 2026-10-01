@@ -21,7 +21,7 @@ export default function SiteHeader({ name }: { name: string }) {
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-start justify-between gap-3 p-3 md:p-5">
       <Link href="/" className="tag pointer-events-auto gap-2 px-2 py-1.5 font-display text-lg normal-case italic tracking-normal sm:px-2.5 sm:text-xl md:text-2xl" aria-label={`${name} — inicio`}>
         <img src={site.logo.paper} alt="" width={32} height={32} className="h-7 w-7 md:h-8 md:w-8" />
-        <span className="hidden min-[360px]:inline">{name}</span>
+        <span className="hidden min-[400px]:inline">{name}</span>
       </Link>
       <nav className="tag pointer-events-auto gap-0 p-0" aria-label="Principal">
         {NAV.map((n, i) => {

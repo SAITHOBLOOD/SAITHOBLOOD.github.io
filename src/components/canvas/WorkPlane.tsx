@@ -45,7 +45,20 @@ export default function WorkPlane({ media, maxW = 2, maxH = 2.4, threshold = 0.5
   const mesh = useRef<Mesh>(null);
   const mat = useRef<InkPlaneMaterialImpl>(null);
   const hovered = useRef(false);
+  const onHoverRef = useRef(onHover);
+  onHoverRef.current = onHover;
   const { vertexWaves } = useQuality();
+
+  // Al hacer clic se navega y el plano se desmonta SIN onPointerOut: soltar cursor y leyenda aquí
+  useEffect(
+    () => () => {
+      if (!hovered.current) return;
+      hovered.current = false;
+      document.body.style.cursor = "";
+      onHoverRef.current?.(false);
+    },
+    [],
+  );
 
   const aspect = media.width / media.height;
   const h = Math.min(maxH, maxW / aspect);
@@ -74,13 +87,15 @@ export default function WorkPlane({ media, maxW = 2, maxH = 2.4, threshold = 0.5
     let alive = true;
     let tween: gsap.core.Tween | undefined;
     (m.uniforms.uReveal as { value: number }).value = 0;
-    loadMediaTexture(media, texSize).then((tex) => {
-      if (!alive || !mat.current) return;
-      const u = mat.current.uniforms;
-      u.uTexture.value = tex;
-      (u.uImageSize.value as Vector2).set(media.width, media.height);
-      tween = gsap.to(u.uReveal, { value: 1, duration: 1.8, delay, ease: "power2.out" });
-    });
+    loadMediaTexture(media, texSize)
+      .then((tex) => {
+        if (!alive || !mat.current) return;
+        const u = mat.current.uniforms;
+        u.uTexture.value = tex;
+        (u.uImageSize.value as Vector2).set(media.width, media.height);
+        tween = gsap.to(u.uReveal, { value: 1, duration: 1.8, delay, ease: "power2.out" });
+      })
+      .catch(() => {}); // red caída: la lámina queda en papel; el próximo montaje reintenta
     return () => {
       alive = false;
       tween?.kill();
