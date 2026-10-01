@@ -65,6 +65,14 @@ body {
   filter: url(#ink-liquid) grayscale(1) contrast(1.35);
   transform: scale(1.03);
 }
+/* Capas de color: misma deformación y escala que la base (registro intacto), sin gris */
+.card:hover .card-media .color-bloom {
+  filter: url(#ink-liquid);
+}
+.card:hover .card-media .spot-plate {
+  filter: url(#ink-liquid);
+  transform: translate(1.5px, -1px) scale(1.03);
+}
 @keyframes ink-in {
   from {
     opacity: 0;

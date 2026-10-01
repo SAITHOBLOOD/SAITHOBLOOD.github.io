@@ -161,10 +161,17 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 function Meta({ item }: { item: ArchiveItem }) {
+  const hasCoverColor = item.cover.type === "image" && !!item.cover.accent;
   return (
     <div className="mt-2 flex items-baseline justify-between gap-2">
       <p className="truncate">
-        {item.accent && <span className="color-dot mr-1.5 align-middle" style={{ background: item.accent }} title="Pieza con color" />}
+        {item.accent && (
+          <span
+            className="color-dot mr-1.5 align-middle"
+            style={{ background: item.accent }}
+            title={hasCoverColor ? "Pieza con color" : "Contiene piezas a color"}
+          />
+        )}
         <span className="font-mono text-[10px] tracking-[0.15em]">{catalogCode(item)}</span>{" "}
         <span className={`font-display text-lg ${item.title ? "" : "italic opacity-50"}`}>{displayTitle(item)}</span>
       </p>

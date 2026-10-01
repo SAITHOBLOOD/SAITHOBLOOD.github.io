@@ -45,7 +45,7 @@ export default function Home() {
     photos: p.results.length,
     timelapses: timelapsesOf(p).length,
     animations: animationsOf(p).length,
-    accent: accentOf(p),
+    accent: accentOf(p) ?? [...p.results, ...p.process].map((m) => (m.type !== "plate" ? m.accent : undefined)).find(Boolean),
   }));
 
   return (
