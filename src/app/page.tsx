@@ -12,12 +12,7 @@ import Marquee from "@/components/dom/Marquee";
 export default function Home() {
   const projects = getProjects();
   const stats = getStats();
-  const heroVideo = (slug: string) => {
-    const v = projects.find((p) => p.slug === slug)?.process.find((m) => m.type === "video");
-    return v?.type === "video" ? v : undefined;
-  };
-  const bgV = heroVideo(site.hero.backdrop);
-  const videos = { eye: site.hero.eye, backdrop: bgV?.src, eyePoster: site.hero.eye, backdropPoster: bgV?.poster };
+  const videos = { eye: site.hero.eye, backdrop: site.hero.backdrop, eyePoster: site.hero.eye, backdropPoster: site.hero.backdropPoster };
   const orbit = [...projects.filter((p) => p.featured), ...projects.filter((p) => !p.featured)].slice(0, 7).map(toCoverItem);
   const archive: ArchiveItem[] = projects.map((p) => ({
     slug: p.slug,

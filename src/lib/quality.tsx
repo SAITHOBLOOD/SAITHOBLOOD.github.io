@@ -21,8 +21,8 @@ export interface QualitySettings {
 }
 
 const PRESETS: Record<Quality, QualitySettings> = {
-  high: { tier: "high", dpr: [1, 2], postprocessing: true, vertexWaves: true, maxWorks: 64 },
-  mid: { tier: "mid", dpr: [1, 1.5], postprocessing: true, vertexWaves: true, maxWorks: 32 },
+  high: { tier: "high", dpr: [1, 1.5], postprocessing: true, vertexWaves: true, maxWorks: 64 },
+  mid: { tier: "mid", dpr: [1, 1.25], postprocessing: true, vertexWaves: true, maxWorks: 32 },
   low: { tier: "low", dpr: [1, 1], postprocessing: false, vertexWaves: false, maxWorks: 12 },
   none: { tier: "none", dpr: [1, 1], postprocessing: false, vertexWaves: false, maxWorks: 0 },
 };

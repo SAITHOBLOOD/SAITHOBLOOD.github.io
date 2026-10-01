@@ -32,8 +32,9 @@ const DRY = process.argv.includes("--dry");
 
 const IMG = /\.(jpe?g|png|webp|avif|tiff?|heic)$/i;
 const VID = /\.(mp4|mov|webm|m4v|mkv)$/i;
-const SIZES = { sm: 480, md: 1280, lg: 2560 };
-const TEX = 2048; // lado mayor de la textura WebGL (móviles aguantan 2048 sin problema)
+const SIZES = { sm: 480, ms: 800, md: 1280, lg: 2560 };
+/** Textura WebGL de la portada del proyecto. 1600 basta para ~85 % de la pantalla y pesa la mitad que 2048. */
+const TEX = 1600;
 
 const CATEGORY = /^(animaci[oó]n(es)?|bocetos?|ilustraci[oó]n(es)?|p[oó]sters?|afiches?)$/i;
 
@@ -135,8 +136,9 @@ async function processImage(srcIn, dir, name, { levels }) {
     const master = await p.resize(SIZES.lg, SIZES.lg, { fit: "inside", withoutEnlargement: true }).png({ compressionLevel: 1 }).toBuffer();
     const from = () => sharp(master);
     await from().avif({ quality: 55, effort: 4 }).toFile(path.join(dir, `${name}-lg.avif`));
-    await from().resize(TEX, TEX, { fit: "inside", withoutEnlargement: true }).webp({ quality: 82 }).toFile(path.join(dir, `${name}-tex.webp`));
+    await from().resize(TEX, TEX, { fit: "inside", withoutEnlargement: true }).webp({ quality: 78 }).toFile(path.join(dir, `${name}-tex.webp`));
     await from().resize(SIZES.md, SIZES.md, { fit: "inside", withoutEnlargement: true }).webp({ quality: 80 }).toFile(outMd);
+    await from().resize(SIZES.ms, SIZES.ms, { fit: "inside", withoutEnlargement: true }).webp({ quality: 74 }).toFile(path.join(dir, `${name}-ms.webp`));
     await from().resize(SIZES.sm, SIZES.sm, { fit: "inside" }).webp({ quality: 72 }).toFile(path.join(dir, `${name}-sm.webp`));
   }
   const meta = await sharp(outMd).metadata();
@@ -145,7 +147,7 @@ async function processImage(srcIn, dir, name, { levels }) {
   return {
     type: "image",
     src: url("md.webp"),
-    srcSet: { sm: url("sm.webp"), md: url("md.webp"), lg: url("lg.avif") },
+    srcSet: { sm: url("sm.webp"), ms: url("ms.webp"), md: url("md.webp"), lg: url("lg.avif") },
     tex: url("tex.webp"),
     width: meta.width,
     height: meta.height,
@@ -166,6 +168,26 @@ function processVideo(src, dir, name, label, role = "process") {
   const { width, height, duration } = ffprobeSize(out);
   const base = `/obras/${path.basename(dir)}`;
   return { type: "video", src: `${base}/${name}.mp4`, poster: `${base}/${name}-poster.webp`, width, height, duration, label, role };
+}
+
+
+/** Logo del artista → recursos de marca: versión clara y oscura (sin fondo) + favicon/ícono. */
+async function processBrand(src) {
+  const BRAND = path.join(ROOT, "public", "brand");
+  mkdirSync(BRAND, { recursive: true });
+  const trimmed = await sharp(src).trim().toBuffer();
+  await sharp(trimmed).resize(512, 512, { fit: "inside" }).webp({ quality: 90 }).toFile(path.join(BRAND, "logo-paper.webp"));
+  // versión tinta: invierte el color, conserva la transparencia
+  await sharp(trimmed).resize(512, 512, { fit: "inside" }).negate({ alpha: false }).webp({ quality: 90 }).toFile(path.join(BRAND, "logo-ink.webp"));
+  // íconos cuadrados sobre tinta (favicon + iOS); Next los toma de src/app automáticamente
+  const icon = async (size, file) =>
+    sharp({ create: { width: size, height: size, channels: 4, background: "#0a0a0a" } })
+      .composite([{ input: await sharp(trimmed).resize(Math.round(size * 0.78), Math.round(size * 0.78), { fit: "inside" }).toBuffer(), gravity: "center" }])
+      .png()
+      .toFile(file);
+  await icon(256, path.join(ROOT, "src", "app", "icon.png"));
+  await icon(180, path.join(ROOT, "src", "app", "apple-icon.png"));
+  console.log("✓ marca → public/brand/, src/app/icon.png");
 }
 
 /* ---------- recorrido ---------- */
@@ -238,65 +260,106 @@ async function main() {
         console.log(`✓ ${rel}  (${results.length} fotos, ${process_.length} vídeos)`);
   }
 
-  for (const cat of readdirSync(SRC).filter((d) => statSync(path.join(SRC, d)).isDirectory())) {
-    const kind = KIND_BY_FOLDER.find(([re]) => re.test(cat))?.[1] ?? "ilustracion";
-    const catDir = path.join(SRC, cat);
-    const levels = kind === "boceto"; // las fotos de celular necesitan nivelado
+  /** Archivo suelto = proyecto de una pieza. El slug NO depende de la carpeta (sobrevive a mover archivos). */
+  async function addLooseFile(abs, rel, entry, { kind, levels, medium, tags = [], pasillo = false }) {
+    const isImg = IMG.test(entry);
+    const isVid = VID.test(entry);
+    if (!isImg && !(isVid && ffmpeg)) return;
 
-    // "Animación Aniversario Tunhouse" no es una categoría: es UN proyecto (título = lo que sobra).
-    if (!CATEGORY.test(cat.trim())) {
-      const rest = cat.replace(/animaci[oó]n|bocetos?|ilustraci[oó]n(es)?|p[oó]sters?|afiches?/gi, "").trim();
-      await addProjectFolder(catDir, cat, cat, kind, levels, rest ? titleCase(rest) : undefined);
+    const info = parseName(entry);
+    const slug = uniqueSlug(info.title ? slugify(info.title) : `${kind}-${info.dateKey ?? shortHash(path.basename(entry))}`, rel);
+    const dir = path.join(OUT, slug);
+    mkdirSync(dir, { recursive: true });
+
+    let media;
+    try {
+      media = isImg ? await processImage(abs, dir, "obra", { levels }) : processVideo(abs, dir, "obra", "animación", "result");
+    } catch (err) {
+      console.warn(`✗ ${rel}: ${err.message}`);
+      return;
+    }
+    if (media.dry) return console.log(`· (dry) ${rel}`);
+    projects.push({
+      slug,
+      source: rel,
+      title: info.title,
+      year: info.year ?? media.date?.year ?? 0,
+      dateKey: info.dateKey ?? media.date?.dateKey ?? "0",
+      kind,
+      medium,
+      tags,
+      pasillo: pasillo || undefined,
+      featured: pasillo || undefined,
+      cover: isImg ? media : null,
+      results: isImg ? [media] : [],
+      process: isVid ? [media] : [],
+    });
+    console.log(`✓ ${rel}`);
+  }
+
+  const entries = (dir) => readdirSync(dir).filter((e) => !e.endsWith(".part") && !e.startsWith(".")).sort();
+  const isProjectDir = (dir, name) => /^proyecto\b/i.test(name) || existsSync(path.join(dir, "meta.json")) || existsSync(path.join(dir, "proceso"));
+  /** Tipo de un proyecto por su contenido: mayoría de vídeos → animación. */
+  const kindByContent = (dir, fallback) => {
+    const files = entries(dir);
+    const v = files.filter((f) => VID.test(f)).length;
+    const i = files.filter((f) => IMG.test(f)).length;
+    return v > i ? "animacion" : fallback;
+  };
+
+  for (const cat of entries(SRC).filter((d) => statSync(path.join(SRC, d)).isDirectory())) {
+    const catDir = path.join(SRC, cat);
+    const name = cat.trim();
+
+    // ---- Logo / marca: no es obra, genera recursos de identidad ----
+    if (/^logo|^firma|^marca/i.test(name)) {
+      const f = entries(catDir).find((x) => IMG.test(x));
+      if (f && !DRY) await processBrand(path.join(catDir, f));
       continue;
     }
 
-    for (const entry of readdirSync(catDir).sort()) {
-      if (entry.endsWith(".part") || entry.startsWith(".")) continue; // descargas en curso
+    // ---- Pasillo: selección curada para el recorrido 3D (también aparecen en el archivo) ----
+    if (/^pasillo$/i.test(name)) {
+      for (const entry of entries(catDir)) {
+        const abs = path.join(catDir, entry);
+        if (statSync(abs).isDirectory()) continue;
+        await addLooseFile(abs, `${cat}/${entry}`, entry, { kind: "ilustracion", levels: false, pasillo: true });
+      }
+      continue;
+    }
+
+    const kind = KIND_BY_FOLDER.find(([re]) => re.test(cat))?.[1] ?? "ilustracion";
+    const levels = kind === "boceto"; // las fotos de celular necesitan nivelado
+
+    // ---- Carpeta raíz que no es categoría → UN proyecto ("Proyecto Nidra", "Animación Aniversario Tunhouse") ----
+    if (!CATEGORY.test(name)) {
+      const rest = cat.replace(/^proyecto\s+/i, "").replace(/animaci[oó]n|bocetos?|ilustraci[oó]n(es)?|p[oó]sters?|afiches?/gi, "").trim();
+      await addProjectFolder(catDir, cat, cat, kindByContent(catDir, kind), levels, rest ? titleCase(rest) : undefined);
+      continue;
+    }
+
+    for (const entry of entries(catDir)) {
       const abs = path.join(catDir, entry);
-      if (!existsSync(abs)) continue;
-      const st = statSync(abs);
-      const rel = path.relative(SRC, abs).split(path.sep).join("/");
-
-      // ---- Proyecto como subcarpeta ----
-      if (st.isDirectory()) {
-        await addProjectFolder(abs, rel, entry, kind, levels);
+      const rel = `${cat}/${entry}`;
+      if (!statSync(abs).isDirectory()) {
+        await addLooseFile(abs, rel, entry, { kind, levels });
         continue;
       }
-
-      // ---- Archivo suelto = proyecto de una pieza ----
-      const isImg = IMG.test(entry);
-      const isVid = VID.test(entry);
-      if (!isImg && !(isVid && ffmpeg)) continue;
-
-      const info = parseName(entry);
-      const slug = uniqueSlug(info.title ? slugify(info.title) : `${slugify(cat)}-${info.dateKey ?? shortHash(rel)}`, rel);
-      const dir = path.join(OUT, slug);
-      mkdirSync(dir, { recursive: true });
-
-      let media;
-      try {
-        media = isImg ? await processImage(abs, dir, "obra", { levels }) : processVideo(abs, dir, "obra", "animación", "result");
-      } catch (err) {
-        console.warn(`✗ ${rel}: ${err.message}`);
+      // Subcarpeta: proyecto (Proyecto…/meta.json/proceso) o SUBCATEGORÍA por técnica ("Grafito", "Tinta", "Blanco y negro")
+      if (isProjectDir(abs, entry)) {
+        const title = entry.replace(/^proyecto\s+/i, "").trim();
+        await addProjectFolder(abs, rel, entry, kindByContent(abs, kind), levels, title ? titleCase(title) : undefined);
         continue;
       }
-      if (media.dry) {
-        console.log(`· (dry) ${rel}`);
-        continue;
+      const medium = titleCase(entry);
+      for (const f of entries(abs)) {
+        const fa = path.join(abs, f);
+        if (statSync(fa).isDirectory()) {
+          if (isProjectDir(fa, f)) await addProjectFolder(fa, `${rel}/${f}`, f, kindByContent(fa, kind), levels, titleCase(f.replace(/^proyecto\s+/i, "")));
+          continue;
+        }
+        await addLooseFile(fa, `${rel}/${f}`, f, { kind, levels, medium, tags: [medium.toLowerCase()] });
       }
-      projects.push({
-        slug,
-        source: rel,
-        title: info.title,
-        year: info.year ?? media.date?.year ?? 0,
-        dateKey: info.dateKey ?? media.date?.dateKey ?? "0",
-        kind,
-        tags: [],
-        cover: isImg ? media : null,
-        results: isImg ? [media] : [],
-        process: isVid ? [media] : [],
-      });
-      console.log(`✓ ${rel}`);
     }
   }
 

@@ -3,6 +3,8 @@ export const site = {
   name: "Saithoblood",
   role: "Ilustración · Animación · Grabado",
   city: "Tunja, Boyacá",
+  /** Logo del artista (generado por `npm run ingest` desde la carpeta Logo de Drive). */
+  logo: { paper: "/brand/logo-paper.webp", ink: "/brand/logo-ink.webp" },
   email: "hola@saithoblood.art", // ✎ provisional
   links: [
     { label: "Instagram", href: "https://www.instagram.com/saithobloodart/" },
@@ -14,10 +16,11 @@ export const site = {
     "Artista visual dedicado a la ilustración surrealista en blanco y negro. Su práctica cruza el dibujo tradicional, el grabado en relieve y la animación cuadro a cuadro.", // ✎
     "Ha realizado pósters, portadas, piezas editoriales y loops animados para músicos, editoriales y espacios culturales.", // ✎
   ],
-  /** Portada: ojo (imagen) y animación de fondo (slug del catálogo). Si faltan, se usa el ojo procedural. */
+  /** Portada: rutas fijas en public/hero (no dependen del catálogo). Si faltan, se usa el ojo procedural. */
   hero: {
     eye: "/hero/eye.webp", // cuadro fijo de «Dream 11» (iris centrado): el ojo solo sigue al cursor
-    backdrop: "animacion-55a2c7", // ojos con cabellera de tentáculos (Nuevo Plano 3)
+    backdrop: "/hero/backdrop.mp4", // ojos con cabellera de tentáculos (Animación/Nuevo Plano 3)
+    backdropPoster: "/hero/backdrop-poster.webp",
   },
   services: ["Ilustración editorial", "Pósters y portadas", "Animación 2D / loops", "Grabado y ediciones limitadas", "Murales"],
   timeline: [

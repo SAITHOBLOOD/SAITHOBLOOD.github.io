@@ -2,7 +2,8 @@
 
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { extend, useFrame, useThree } from "@react-three/fiber";
-import { useTexture, useVideoTexture } from "@react-three/drei";
+import { useTexture } from "@react-three/drei";
+import { useLoopVideoTexture } from "@/lib/videoTexture";
 import { SRGBColorSpace } from "three";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
@@ -91,6 +92,7 @@ export default function HeroScene({ projects, videos = {} }: { projects: CoverIt
                 media={proj.cover}
                 maxW={1.1}
                 maxH={1.3}
+                texSize="sm"
                 delay={0.8 + i * 0.12}
                 scrollReactive={false}
                 onHover={(v) => uiStore.set({ hoveredId: v ? proj.slug : null })}
@@ -241,7 +243,7 @@ function VideoEyeball({ src }: { src: string }) {
   });
   return (
     <mesh>
-      <sphereGeometry args={[1.35, 96, 96]} />
+      <sphereGeometry args={[1.35, 64, 64]} />
       <videoEyeMaterial ref={mat} key={VideoEyeMaterial.key} uVideo={tex} />
     </mesh>
   );
@@ -252,23 +254,9 @@ function VideoEyeball({ src }: { src: string }) {
  * sin importar el scroll), con parallax sutil del cursor. Ignora la niebla.
  */
 function Backdrop({ src }: { src: string }) {
-  const tex = useVideoTexture(src, { muted: true, loop: true, playsInline: true, start: true, crossOrigin: "anonymous", unsuspend: "loadedmetadata" });
-  useEffect(() => {
-    done("hero-backdrop");
-    const video = tex.image as HTMLVideoElement;
-    if (video) {
-      video.play().catch(() => {});
-      const resume = () => {
-        if (video.paused) video.play().catch(() => {});
-      };
-      window.addEventListener("pointerdown", resume, { once: true });
-      window.addEventListener("scroll", resume, { once: true });
-      return () => {
-        window.removeEventListener("pointerdown", resume);
-        window.removeEventListener("scroll", resume);
-      };
-    }
-  }, [tex]);
+  const tex = useLoopVideoTexture(src);
+  useEffect(() => done("hero-backdrop"), []);
+  const forward = useMemo(() => new Vector3(), []);
   const mesh = useRef<import("three").Mesh>(null);
   const mat = useRef<InstanceType<typeof VideoBackdropMaterial>>(null);
   const size = useThree((s) => s.size);
@@ -280,7 +268,7 @@ function Backdrop({ src }: { src: string }) {
     const cam = state.camera as import("three").PerspectiveCamera;
     const h = 2 * Math.tan((cam.fov * Math.PI) / 360) * DIST * 1.08; // 8 % extra para el parallax
     const w = h * (size.width / size.height);
-    m.position.copy(cam.position).add(cam.getWorldDirection(new Vector3()).multiplyScalar(DIST));
+    m.position.copy(cam.position).add(cam.getWorldDirection(forward).multiplyScalar(DIST));
     m.quaternion.copy(cam.quaternion);
     m.scale.set(w, h, 1);
     if (mat.current) {

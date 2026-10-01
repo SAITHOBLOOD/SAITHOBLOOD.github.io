@@ -4,7 +4,10 @@ import { site } from "@/content/site";
 export default function SiteFooter() {
   return (
     <footer className="relative z-10 border-t border-ink bg-ink px-5 pb-8 pt-16 text-paper md:px-8">
-      <p className="font-mono text-[11px] uppercase tracking-[0.25em] opacity-60">¿Un encargo, un póster, una portada?</p>
+      <div className="flex items-start justify-between gap-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] opacity-60">¿Un encargo, un póster, una portada?</p>
+        <img src={site.logo.paper} alt={`Logo de ${site.name}`} width={160} height={154} className="h-16 w-auto shrink-0 opacity-90 md:h-28" />
+      </div>
       <a href={`mailto:${site.email}`} className="mt-4 block break-all font-display text-[11vw] italic leading-[0.9] hover:underline md:text-[7vw]">
         {site.email}
       </a>

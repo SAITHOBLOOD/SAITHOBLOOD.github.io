@@ -6,10 +6,14 @@
  * (Categoría/archivo o Categoría/Proyecto/…). Incremental: solo baja lo que falta,
  * así que se puede correr cada vez que suban material nuevo. Luego: npm run ingest.
  *
+ * ESPEJO: si en Drive se MUEVE un archivo (p. ej. Bocetos/x.jpg → Bocetos/Tinta/x.jpg),
+ * se reubica la copia local en vez de volver a descargarla. Lo que ya no existe en Drive
+ * se mueve a contenido/.papelera/<fecha>/ (nunca se borra).
+ *
  * Requisito: la carpeta debe estar compartida como "cualquiera con el enlace".
  * Flags: --dry (solo lista) · --only=Ilustración (una categoría) · --max-mb=80 (omite archivos más grandes)
  */
-import { createWriteStream, existsSync, mkdirSync, renameSync, statSync, unlinkSync } from "node:fs";
+import { createWriteStream, existsSync, mkdirSync, readdirSync, renameSync, rmdirSync, statSync, unlinkSync } from "node:fs";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import path from "node:path";
@@ -46,6 +50,7 @@ async function list(folderId, attempt = 1) {
 const safe = (name) => name.replace(/[\u0000-\u001f]+/g, " ").replace(/[<>:"/\\|?*]/g, "_").replace(/\s+/g, " ").trim();
 
 async function download(id, dest) {
+  mkdirSync(path.dirname(dest), { recursive: true });
   const url = `https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`;
   const res = await fetch(url);
   const type = res.headers.get("content-type") ?? "";
@@ -71,16 +76,34 @@ async function walk(folderId, rel, depth, stats) {
       continue;
     }
     if (depth === 0) continue; // archivos sueltos en la raíz: sin categoría
+    stats.expected.add(path.resolve(target));
     if (existsSync(target)) {
       stats.kept++;
       continue;
     }
-    if (DRY) {
-      console.log(`· faltaría  ${path.join(rel, e.name)}`);
-      stats.new++;
-      continue;
+    stats.missing.push({ e, rel, target });
+  }
+}
+
+/** Todos los archivos locales (sin papelera ni descargas a medias). */
+function localFiles(dir, out = []) {
+  if (!existsSync(dir)) return out;
+  for (const f of readdirSync(dir)) {
+    if (f.startsWith(".")) continue;
+    const abs = path.join(dir, f);
+    if (statSync(abs).isDirectory()) localFiles(abs, out);
+    else if (!f.endsWith(".part")) out.push(path.resolve(abs));
+  }
+  return out;
+}
+
+function removeEmptyDirs(dir) {
+  for (const f of readdirSync(dir)) {
+    const abs = path.join(dir, f);
+    if (!f.startsWith(".") && statSync(abs).isDirectory()) {
+      removeEmptyDirs(abs);
+      if (!readdirSync(abs).length) rmdirSync(abs);
     }
-    stats.queue.push(() => fetchOne(e, rel, target, stats));
   }
 }
 
@@ -113,15 +136,58 @@ async function fetchOne(e, rel, target, stats) {
     }
 }
 
-const stats = { new: 0, kept: 0, skipped: 0, failed: 0, bytes: 0, queue: [] };
+const stats = { new: 0, kept: 0, moved: 0, trashed: 0, skipped: 0, failed: 0, bytes: 0, queue: [], expected: new Set(), missing: [] };
 mkdirSync(OUT, { recursive: true });
 await walk(ROOT_ID, "", 0, stats);
+
+// ---- Espejo: reubicar movidos, descargar nuevos, mandar a papelera lo eliminado ----
+const orphans = localFiles(OUT).filter((f) => !stats.expected.has(f));
+const byName = new Map();
+for (const o of orphans) {
+  const k = path.basename(o).normalize("NFC").toLowerCase();
+  byName.set(k, [...(byName.get(k) ?? []), o]);
+}
+for (const m of stats.missing) {
+  const k = path.basename(m.target).normalize("NFC").toLowerCase();
+  const candidates = byName.get(k) ?? [];
+  if (candidates.length === 1) {
+    // mismo nombre, único candidato → es el mismo archivo movido de carpeta
+    const from = candidates[0];
+    byName.delete(k);
+    console.log(`${DRY ? "· movería" : "→ movido"}  ${path.relative(OUT, from)}  →  ${path.relative(OUT, m.target)}`);
+    if (!DRY) {
+      mkdirSync(path.dirname(m.target), { recursive: true });
+      renameSync(from, m.target);
+    }
+    stats.moved++;
+  } else if (DRY) {
+    console.log(`· faltaría  ${path.join(m.rel, m.e.name)}`);
+    stats.new++;
+  } else {
+    stats.queue.push(() => fetchOne(m.e, m.rel, m.target, stats));
+  }
+}
+if (!ONLY) {
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  for (const list of byName.values()) {
+    for (const o of list) {
+      console.log(`${DRY ? "· a papelera" : "⌫ papelera"}  ${path.relative(OUT, o)}`);
+      if (!DRY) {
+        const dest = path.join(OUT, ".papelera", stamp, path.relative(OUT, o));
+        mkdirSync(path.dirname(dest), { recursive: true });
+        renameSync(o, dest);
+      }
+      stats.trashed++;
+    }
+  }
+}
 // Descargas en paralelo (los archivos pequeños no esperan a los vídeos grandes)
 const queue = stats.queue;
 await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
   while (queue.length) await queue.shift()();
 }));
+if (!DRY && !ONLY) removeEmptyDirs(OUT);
 console.log(
-  `\n${DRY ? "Faltan" : "Nuevos"}: ${stats.new} (${(stats.bytes / 1e6).toFixed(0)} MB) · ya estaban: ${stats.kept} · omitidos: ${stats.skipped} · fallidos: ${stats.failed}`,
+  `\n${DRY ? "Faltan" : "Nuevos"}: ${stats.new} (${(stats.bytes / 1e6).toFixed(0)} MB) · movidos: ${stats.moved} · a papelera: ${stats.trashed} · ya estaban: ${stats.kept} · omitidos: ${stats.skipped} · fallidos: ${stats.failed}`,
 );
-if (!DRY && stats.new) console.log("Siguiente paso: npm run ingest");
+if (!DRY && (stats.new || stats.moved || stats.trashed)) console.log("Siguiente paso: npm run ingest");

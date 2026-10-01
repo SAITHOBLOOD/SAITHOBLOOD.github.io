@@ -12,12 +12,17 @@ const MAX = 48;
 const cache = new Map<string, Promise<Texture>>();
 const loader = new TextureLoader();
 
-function key(m: ResultMedia) {
-  return m.type === "image" ? (m.tex ?? m.src) : `plate:${m.seed}:${m.width}x${m.height}`;
+/** sm 480 · ms 800 · md 1280 · tex 1600 (portada). Pedir el tamaño que realmente se ve. */
+export type TexSize = "sm" | "ms" | "md" | "tex";
+
+export function mediaTextureUrl(m: ResultMedia, size: TexSize = "md") {
+  if (m.type !== "image") return `plate:${m.seed}:${m.width}x${m.height}`;
+  if (size === "tex") return m.tex ?? m.src;
+  return m.srcSet?.[size] ?? m.srcSet?.md ?? m.src;
 }
 
-export function loadMediaTexture(m: ResultMedia): Promise<Texture> {
-  const k = key(m);
+export function loadMediaTexture(m: ResultMedia, size: TexSize = "md"): Promise<Texture> {
+  const k = mediaTextureUrl(m, size);
   const hit = cache.get(k);
   if (hit) {
     cache.delete(k);
@@ -27,7 +32,7 @@ export function loadMediaTexture(m: ResultMedia): Promise<Texture> {
 
   const p: Promise<Texture> =
     m.type === "image"
-      ? loader.loadAsync(m.tex ?? m.src).then((t) => {
+      ? loader.loadAsync(k).then((t) => {
           t.colorSpace = SRGBColorSpace;
           t.anisotropy = 4;
           return t;

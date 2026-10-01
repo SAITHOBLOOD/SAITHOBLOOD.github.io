@@ -54,7 +54,7 @@ ${fbm}
 float stroke(vec2 p, float angle, float width) {
   float s = sin(angle), c = cos(angle);
   float d = dot(p, vec2(c, s));
-  float wobble = (fbm(vec2(dot(p, vec2(-s, c)) * 0.02, d * 0.05)) - 0.5) * 0.6; // temblor de mano
+  float wobble = (vnoise(vec2(dot(p, vec2(-s, c)) * 0.02, d * 0.05)) - 0.5) * 0.6; // temblor de mano (1 octava basta)
   float f = abs(fract(d + wobble) - 0.5);
   float aa = fwidth(d) * 0.8;
   return 1.0 - smoothstep(width - aa, width + aa, f);
@@ -68,7 +68,7 @@ void main() {
   float tone = clamp(diff * diff * uTone + rim * 0.25, 0.0, 1.0);
 
   vec2 p = gl_FragCoord.xy / uSpacing;
-  float jitter = (fbm(vPosW.xy * 3.0 + vPosW.z) - 0.5) * 0.12;
+  float jitter = (vnoise(vPosW.xy * 3.0 + vPosW.z) - 0.5) * 0.12;
   float t = tone + jitter;
 
   float ink = 0.0;

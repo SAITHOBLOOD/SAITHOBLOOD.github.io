@@ -74,28 +74,30 @@ void main() {
   // Estiramiento vertical por velocidad de scroll
   uv.y = (uv.y - 0.5) * (1.0 - clamp(abs(uScrollVelocity) * 0.004, 0.0, 0.2)) + 0.5;
 
-  // --- Distorsión líquida (domain warping) ---
+  // --- Distorsión líquida (domain warping): solo cerca del cursor ---
   float d = distance(vUv, uMouse);
   float falloff = smoothstep(0.5, 0.0, d) * uHover;
-  float t = uTime * 0.25;
-  vec2 q = vec2(fbm(uv * 3.0 + t), fbm(uv * 3.0 - t + 5.2));
-  vec2 warp = (vec2(fbm(uv * 3.0 + q * 2.0 + t), fbm(uv * 3.0 + q * 2.0 + 1.7)) - 0.5);
-  uv += warp * 0.12 * falloff;
+  if (falloff > 0.002) {
+    float t = uTime * 0.25;
+    vec2 q = vec2(fbm(uv * 3.0 + t), fbm(uv * 3.0 - t + 5.2));
+    vec2 warp = (vec2(fbm(uv * 3.0 + q * 2.0 + t), fbm(uv * 3.0 + q * 2.0 + 1.7)) - 0.5);
+    uv += warp * 0.12 * falloff;
+  }
 
   vec2 tuv = coverUv(uv, uPlaneSize, uImageSize);
   float tone = luma(texture2D(uTexture, tuv).rgb);
 
-  // --- En reposo: la obra fiel. Solo niveles (papel → blanco, tinta → negro) para
-  //     que el rayado de plumilla respire sin destruir detalle.
-  float clean = smoothstep(0.06, 0.9, tone);
+  // --- En reposo: la obra fiel. Solo niveles (papel → blanco, tinta → negro).
+  float ink = smoothstep(0.06, 0.9, tone);
 
   // --- Bajo el cursor: binarización de grabado con bordes de tinta irregulares
-  float edgeNoise = fbm(vUv * 60.0) - 0.5;              // fibra del papel
-  float bleed = falloff * (0.25 + 0.1 * sin(uTime * 2.0));
-  float th = uThreshold + edgeNoise * 0.18 + bleed;     // la tinta avanza cerca del cursor
-  float stamped = smoothstep(th - 0.03, th + 0.03, tone);
-
-  float ink = mix(clean, stamped, clamp(falloff * uBleed * 1.6, 0.0, 1.0));
+  if (falloff > 0.002) {
+    float edgeNoise = fbm(vUv * 60.0) - 0.5;              // fibra del papel
+    float bleed = falloff * (0.25 + 0.1 * sin(uTime * 2.0));
+    float th = uThreshold + edgeNoise * 0.18 + bleed;     // la tinta avanza cerca del cursor
+    float stamped = smoothstep(th - 0.03, th + 0.03, tone);
+    ink = mix(ink, stamped, clamp(falloff * uBleed * 1.6, 0.0, 1.0));
+  }
 
   // --- Grano analógico
   float grain = hash12(vUv * 1024.0 + fract(uTime) * 91.0) - 0.5;
@@ -106,12 +108,14 @@ void main() {
   // --- Revelado por disolución de tinta ---
   // uReveal 0 → papel limpio; 1 → obra completa. El frente avanza por un campo fBm
   // y deja un filo de tinta húmeda mientras se mueve.
-  float n = fbm(vUv * 8.0);
-  float front = uReveal * 1.2 - 0.1;
-  float reveal = 1.0 - smoothstep(front - 0.05, front, n);
-  float rim = smoothstep(0.0, 0.025, abs(n - front));
-  color = mix(uPaper, color, reveal);
-  color = mix(uInk, color, mix(1.0, rim, step(uReveal, 0.999)));
+  if (uReveal < 0.999) {
+    float n = fbm(vUv * 8.0);
+    float front = uReveal * 1.2 - 0.1;
+    float reveal = 1.0 - smoothstep(front - 0.05, front, n);
+    float rim = smoothstep(0.0, 0.025, abs(n - front));
+    color = mix(uPaper, color, reveal);
+    color = mix(uInk, color, rim);
+  }
 
   gl_FragColor = vec4(color, 1.0);
   #include <colorspace_fragment>

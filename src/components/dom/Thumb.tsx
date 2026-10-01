@@ -28,7 +28,7 @@ export default function Thumb({ media, alt, sizes = "(min-width: 768px) 25vw, 50
       {media.src && (
         <img
           src={media.src}
-          srcSet={set ? `${set.sm} 480w, ${set.md} 1280w` : undefined}
+          srcSet={set ? [`${set.sm} 480w`, set.ms && `${set.ms} 800w`, `${set.md} 1280w`].filter(Boolean).join(", ") : undefined}
           sizes={sizes}
           alt={alt}
           width={media.width}

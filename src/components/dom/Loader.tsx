@@ -80,7 +80,10 @@ export default function Loader({ name }: { name: string }) {
             <div className="absolute inset-y-0 left-0 bg-paper transition-[width] duration-300" style={{ width: `${Math.round(shown.current * 100)}%` }} />
           </div>
           <p>entintando · {Math.round(shown.current * 100)}%</p>
-          <p className="mt-2 opacity-50">{name}</p>
+          <p className="mt-4 flex items-center justify-center gap-2 opacity-60">
+            <img src="/brand/logo-paper.webp" alt="" width={20} height={20} className="h-5 w-5" />
+            {name}
+          </p>
         </div>
       </div>
     </div>

@@ -60,7 +60,8 @@ export default function GLStage({ children, fallback, className = "fixed inset-0
     hookAssets();
   }, []);
   useEffect(() => {
-    if (tier !== "pending" && tier !== "none") setDpr(qualityPreset(tier).dpr[1]);
+    // Nunca más píxeles que la pantalla real (antes un 2 fijo dibujaba al doble en pantallas 1×)
+    if (tier !== "pending" && tier !== "none") setDpr(Math.min(window.devicePixelRatio || 1, qualityPreset(tier).dpr[1]));
     if (tier === "none") done("gl"); // sin WebGL: el fallback ya está listo
   }, [tier]);
   useEffect(() => {
@@ -98,14 +99,14 @@ export default function GLStage({ children, fallback, className = "fixed inset-0
           eventPrefix="client"
           dpr={dpr}
           flat
-          frameloop="always"
+          frameloop={visible ? "always" : "never"} /* fuera de pantalla no se dibuja: libera la GPU al ver el archivo */
           gl={{ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false }}
           camera={{ fov: 45, near: 0.1, far: 100, position: [0, 0, 6], ...camera }}
         >
           <color attach="background" args={[background]} />
           {fog && <fog attach="fog" args={fog} />}
           <ContextLossGuard onLost={onLost} onRestored={onRestored} />
-          <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(q.dpr[1])} flipflops={3} onFallback={() => setDpr(1)} />
+          <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(Math.min(window.devicePixelRatio || 1, q.dpr[1]))} flipflops={3} onFallback={() => setDpr(1)} />
           <Suspense fallback={null}>{children}</Suspense>
           <GLReady />
           {q.postprocessing && post && <PostFX {...post} />}

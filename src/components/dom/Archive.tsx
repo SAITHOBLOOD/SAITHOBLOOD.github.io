@@ -200,7 +200,7 @@ function Grid({ items }: { items: ArchiveItem[] }) {
           {col.map((item) => (
             <li key={item.slug}>
               <Link href={`/proyecto/${item.slug}`} className="card group block">
-                <Thumb media={item.cover} alt={`${catalogCode(item)} ${displayTitle(item)}`} className="card-media" />
+                <Thumb media={item.cover} alt={`${catalogCode(item)} ${displayTitle(item)}`} className="card-media" sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 46vw" />
                 <Meta item={item} />
               </Link>
             </li>

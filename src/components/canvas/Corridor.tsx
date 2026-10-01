@@ -108,6 +108,7 @@ export default function Corridor({ projects, onIndex }: { projects: CoverItem[];
             <group ref={(el) => void (artRefs.current[i] = el)} position={[0, (i % 3) * 0.15 - 0.1, 0]}>
               <WorkPlane
                 media={proj.cover}
+                texSize="ms"
                 threshold={proj.ink?.threshold}
                 bleed={proj.ink?.bleed}
                 onHover={(v) => uiStore.set({ hoveredId: v ? proj.slug : null })}

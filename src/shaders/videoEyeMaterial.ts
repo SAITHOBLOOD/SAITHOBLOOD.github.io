@@ -55,7 +55,7 @@ export const VideoEyeMaterial = shaderMaterial(
   float hatch(vec2 p, float angle, float width) {
     float s = sin(angle), c = cos(angle);
     float d = dot(p, vec2(c, s));
-    float f = abs(fract(d + (fbm(vec2(dot(p, vec2(-s, c)) * 0.02, d * 0.05)) - 0.5) * 0.6) - 0.5);
+    float f = abs(fract(d + (vnoise(vec2(dot(p, vec2(-s, c)) * 0.02, d * 0.05)) - 0.5) * 0.6) - 0.5);
     float aa = fwidth(d) * 0.8;
     return 1.0 - smoothstep(width - aa, width + aa, f);
   }
@@ -80,8 +80,10 @@ export const VideoEyeMaterial = shaderMaterial(
     // Rayado en las sombras (continúa el lenguaje de plumilla)
     vec2 p = gl_FragCoord.xy / 5.0;
     float ink = 0.0;
-    ink = max(ink, hatch(p, 0.785, 0.12) * step(diff, 0.5) * 0.8);
-    ink = max(ink, hatch(p * 1.05, -0.785, 0.14) * step(diff, 0.3));
+    if (diff < 0.5) {
+      ink = max(ink, hatch(p, 0.785, 0.12) * 0.8);
+      if (diff < 0.3) ink = max(ink, hatch(p * 1.05, -0.785, 0.14));
+    }
     // Contorno de silueta
     float edge = smoothstep(0.6, 0.85, 1.0 - abs(dot(n, normalize(vViewDir))));
     ink = max(ink, edge);

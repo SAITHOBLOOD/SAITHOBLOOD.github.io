@@ -21,16 +21,18 @@ body {
   color: var(--color-paper);
 }
 
-/* Grano analógico (SVG feTurbulence, sin imágenes) */
+/* Grano analógico (public/grain.png, 50 KB, en mosaico) */
 .paper-grain::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.16;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* PNG de 256 px con grano de tinta en el canal alfa: sin mix-blend-mode, que obligaba a
+     recomponer toda la página en cada frame de scroll */
+  opacity: 0.55;
+  background-image: url("/grain.png");
+  background-size: 256px 256px;
 }
 /* En capa base para que utilidades como `sticky`/`absolute` puedan sobrescribirla */
 @layer base {
@@ -66,7 +68,6 @@ body {
 @keyframes ink-in {
   from {
     opacity: 0;
-    filter: blur(6px) contrast(3);
     transform: translateY(16px);
   }
 }

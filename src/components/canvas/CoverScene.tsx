@@ -22,7 +22,7 @@ export default function CoverScene({ media }: { media: ResultMedia }) {
 
   return (
     <group ref={g}>
-      <WorkPlane media={media} maxW={viewport.width * 0.92} maxH={viewport.height * 0.92} bleed={0.4} scrollReactive={false} />
+      <WorkPlane media={media} maxW={viewport.width * 0.92} maxH={viewport.height * 0.92} bleed={0.4} scrollReactive={false} texSize="tex" />
     </group>
   );
 }

@@ -16,8 +16,8 @@ export interface ImageMedia {
   type: "image";
   /** 1280 px WebP (uso general). */
   src: string;
-  /** sm 480 WebP · md 1280 WebP · lg 2560 AVIF */
-  srcSet?: { sm: string; md: string; lg: string };
+  /** sm 480 WebP · ms 800 WebP · md 1280 WebP · lg 2560 AVIF */
+  srcSet?: { sm: string; ms?: string; md: string; lg: string };
   /** Textura WebGL (2048 px). */
   tex?: string;
   width: number;
@@ -69,6 +69,8 @@ export interface Project {
   /** Timelapses / registros de proceso. */
   process: ProcessMedia[];
   featured?: boolean;
+  /** En la carpeta «Pasillo» de Drive: selección curada para el recorrido 3D. */
+  pasillo?: boolean;
   ink?: { threshold?: number; bleed?: number };
 }
 
@@ -76,8 +78,8 @@ export const catalogCode = (p: Pick<Project, "n">) => `Nº ${String(p.n).padStar
 export const displayTitle = (p: Pick<Project, "title">) => p.title?.trim() || "Sin título";
 
 /** Proyecto sin listas de media: lo justo para escenas 3D, leyendas y collages. */
-export type CoverItem = Pick<Project, "slug" | "n" | "title" | "year" | "kind" | "cover" | "ink">;
-export const toCoverItem = ({ slug, n, title, year, kind, cover, ink }: Project): CoverItem => ({ slug, n, title, year, kind, cover, ink });
+export type CoverItem = Pick<Project, "slug" | "n" | "title" | "year" | "kind" | "cover" | "ink" | "pasillo">;
+export const toCoverItem = ({ slug, n, title, year, kind, cover, ink, pasillo }: Project): CoverItem => ({ slug, n, title, year, kind, cover, ink, pasillo });
 
 /** year = 0 → sin fecha conocida (ni en el nombre del archivo ni en EXIF). */
 export const displayYear = (year: number) => (year > 0 ? String(year) : "s. f.");
