@@ -34,7 +34,10 @@ export default async function ProjectPage({ params }: Params) {
   // El botón «Color» aparece si CUALQUIER pieza del proyecto tiene color (no solo la portada)
   const projectAccent = accentOf(p) ?? [...p.results, ...p.process].map((m) => (m.type !== "plate" ? m.accent : undefined)).find(Boolean);
   const timelapses = timelapsesOf(p);
-  const sections = [anims.length && "anim", timelapses.length && "proc", p.results.length && "res"].filter(Boolean) as string[];
+  // La portada ya muestra la obra (con movimiento y revelado): la galería no la repite
+  const coverSrc = p.cover.type === "image" ? p.cover.src : undefined;
+  const gallery = p.results.filter((m) => m.type !== "image" || m.src !== coverSrc);
+  const sections = [anims.length && "anim", timelapses.length && "proc", gallery.length && "res"].filter(Boolean) as string[];
   const roman = (k: string) => ["I", "II", "III"][sections.indexOf(k)];
 
   return (
@@ -111,11 +114,11 @@ export default async function ProjectPage({ params }: Params) {
         )}
 
         {/* Resultado */}
-        {p.results.length > 0 && (
+        {gallery.length > 0 && (
           <section className="border-t border-ink px-5 py-16 md:px-8">
-            <SectionTitle n={roman("res")} label="Resultado" hint={`${p.results.length} foto${p.results.length === 1 ? "" : "s"}`} />
-            <div className={p.results.length === 1 ? "mx-auto max-w-4xl" : ""}>
-              <Gallery items={p.results} title={title} />
+            <SectionTitle n={roman("res")} label="Resultado" hint={`${gallery.length} foto${gallery.length === 1 ? "" : "s"}`} />
+            <div className={gallery.length === 1 ? "mx-auto max-w-4xl" : ""}>
+              <Gallery items={gallery} title={title} />
             </div>
           </section>
         )}
