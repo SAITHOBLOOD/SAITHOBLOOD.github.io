@@ -1,0 +1,84 @@
+name: Sincronizar obras desde Drive
+
+# Revisa la carpeta de Drive cada 3 horas: baja lo nuevo, lo procesa (imágenes, vídeos,
+# color, logo) y, si cambió algo, lo sube al repo y vuelve a publicar la página.
+# También se puede lanzar a mano: pestaña Actions → «Sincronizar obras desde Drive» → Run workflow.
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit de las obras procesadas
+  actions: write # lanzar el despliegue a GitHub Pages
+
+concurrency:
+  group: drive-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      # Copia local del Drive entre ejecuciones (evita volver a bajar ~2 GB cada vez)
+      - name: Restaurar copia del Drive
+        uses: actions/cache/restore@v4
+        with:
+          path: contenido
+          key: contenido-${{ github.run_id }}
+          restore-keys: contenido-
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Bajar novedades del Drive
+        id: sync
+        env:
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+        run: |
+          node scripts/drive-sync.mjs | tee sync.log
+          if grep -q "Siguiente paso" sync.log; then echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Guardar copia del Drive
+        if: steps.sync.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: contenido
+          key: contenido-${{ github.run_id }}
+
+      - name: Procesar obras
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          # Lo ya publicado cuenta como al día: solo se procesa lo realmente nuevo
+          find public/obras public/brand -type f -exec touch {} + 2>/dev/null || true
+          node scripts/ingest.mjs
+
+      - name: Publicar
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public/obras public/brand src/content/catalog.json src/app/icon.png src/app/apple-icon.png
+          if git diff --cached --quiet; then
+            echo "Drive cambió pero no hay obras nuevas que publicar."
+            exit 0
+          fi
+          git commit -m "obras: sincronizado desde Drive"
+          git push
+          # Los push hechos por Actions no disparan otros workflows: se lanza el despliegue a mano
+          gh workflow run deploy.yml --ref "${GITHUB_REF_NAME}"

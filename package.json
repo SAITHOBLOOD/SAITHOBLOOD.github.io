@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "ingest": "node scripts/ingest.mjs",
-    "sync": "node scripts/drive-sync.mjs"
+    "sync": "node --env-file-if-exists=.env.local scripts/drive-sync.mjs",
+    "publish:obras": "npm run sync && npm run ingest"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -11,7 +11,7 @@ npm run dev        # http://localhost:3000
 
 | Ruta | Qué es | 3D |
 |---|---|---|
-| `/` | Portada + **Archivo** (filtros, búsqueda por Nº/título, cuadrícula/índice, carga incremental) | Ojo a plumilla que sigue al cursor, puertas flotantes, anillo de obras |
+| `/` | Portada + **Proyectos** (carpetas «Proyecto X») + **Archivo** (filtros, búsqueda por Nº/título, cuadrícula/índice, carga incremental) | Ojo a plumilla que sigue al cursor, puertas flotantes, anillo de obras |
 | `/pasillo` | Recorrido inmersivo por **todo** el catálogo (filtrable por tipo) | Corredor infinito de puertas |
 | `/proyecto/<slug>` | Ficha: portada, **timelapses de proceso** (arrastrables), fotos del resultado con visor, anterior/siguiente | Portada WebGL con tinta líquida |
 | `/info` | Bio, encargos, recorrido, contacto | Escalera de caracol infinita |
@@ -20,12 +20,18 @@ Forzar calidad para QA: `?quality=high|mid|low|none`.
 
 ## Cargar las obras (flujo con Drive)
 
+**Automático:** `.github/workflows/sync-drive.yml` revisa el Drive cada 3 horas, procesa lo nuevo y vuelve a
+publicar en GitHub Pages. Requiere el secreto de repositorio **`DRIVE_FOLDER_ID`**
+(Settings → Secrets and variables → Actions). Guía para el artista: [docs/GUIA-DRIVE.md](docs/GUIA-DRIVE.md).
+
+**Manual (local):**
+
 ```bash
-npm run sync     # baja SOLO lo nuevo de la carpeta pública de Drive a contenido/
+npm run sync     # baja SOLO lo nuevo de Drive a contenido/ (reubica lo movido, papelera para lo borrado)
 npm run ingest   # optimiza lo nuevo y regenera el catálogo
 ```
 
-La carpeta de Drive (`portafolio_saith`) está configurada en `scripts/drive-sync.mjs` (o variable `DRIVE_FOLDER_ID`).
+El ID de la carpeta va en `.env.local` (`DRIVE_FOLDER_ID=…`), nunca en el código: el repo es público.
 Una carpeta en la raíz que no sea una categoría (p. ej. «Animación Aniversario Tunhouse») se trata como **un proyecto**.
 
 Estructura esperada (la misma de Drive):

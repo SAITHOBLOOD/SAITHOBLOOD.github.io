@@ -20,7 +20,7 @@ function withCover(p: Raw): Raw & { cover: ResultMedia } {
   if (p.cover) return p as Raw & { cover: ResultMedia };
   const v = p.process.find((m) => m.type === "video");
   const cover: ImageMedia = v?.type === "video" && v.poster
-    ? { type: "image", src: v.poster, tex: v.poster, width: v.width, height: v.height }
+    ? { type: "image", src: v.poster, tex: v.poster, width: v.width, height: v.height, accent: v.accent, colorAmount: v.colorAmount, spot: v.spot }
     : { type: "image", src: "", width: 4, height: 3 };
   return { ...p, cover };
 }

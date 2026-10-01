@@ -18,7 +18,13 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import path from "node:path";
 
-const ROOT_ID = process.env.DRIVE_FOLDER_ID ?? "1YOGgcZp2LFt0UeSe7q6tDG_W1BmurEd9";
+// El ID de la carpeta NO va en el código (el repo es público y daría acceso a los originales).
+// Local: .env.local (ignorado por git) · GitHub Actions: secreto DRIVE_FOLDER_ID.
+const ROOT_ID = process.env.DRIVE_FOLDER_ID;
+if (!ROOT_ID) {
+  console.error("✗ Falta DRIVE_FOLDER_ID (ponlo en .env.local o como secreto en GitHub).");
+  process.exit(1);
+}
 const OUT = path.join(process.cwd(), "contenido");
 const DRY = process.argv.includes("--dry");
 const ONLY = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1];

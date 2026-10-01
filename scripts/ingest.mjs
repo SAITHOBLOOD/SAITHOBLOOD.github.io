@@ -162,7 +162,7 @@ function processVideo(src, dir, name, label, role = "process") {
   if (!isFresh(src, out)) {
     if (DRY) return { dry: true };
     // Monocromo, 720p, faststart: los timelapses pesan muy poco en escala de grises.
-    spawnSync("ffmpeg", ["-v", "error", "-y", "-i", src, "-vf", "scale='min(1280,iw)':-2,format=yuv420p", "-c:v", "libx264", "-crf", "26", "-preset", "slow", "-movflags", "+faststart", "-an", out], { stdio: "inherit" });
+    spawnSync("ffmpeg", ["-v", "error", "-y", "-i", src, "-vf", "scale='min(1280,iw)':-2,format=yuv420p", "-c:v", "libx264", "-crf", "26", "-preset", "slow", "-movflags", "+faststart", "-map_metadata", "-1", "-an", out], { stdio: "inherit" });
     spawnSync("ffmpeg", ["-v", "error", "-y", "-ss", "0.3", "-i", out, "-frames:v", "1", "-vf", "scale='min(1280,iw)':-2", poster], { stdio: "inherit" });
   }
   const { width, height, duration } = ffprobeSize(out);
@@ -190,6 +190,100 @@ async function processBrand(src) {
   console.log("✓ marca → public/brand/, src/app/icon.png");
 }
 
+
+/* ---------- color: «segunda tinta» ---------- */
+
+const COLOR_MIN = 0.03; // ≥ 3 % de píxeles muy saturados = pieza con color (el papel amarillento no llega)
+
+function rgbToHsl(r, g, b) {
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+  if (mx === mn) return [0, 0, l];
+  const d = mx - mn;
+  const s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+  const h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h / 6, s, l];
+}
+function hslToHex(h, s, l) {
+  const f = (n) => {
+    const k = (n + h * 12) % 12;
+    const a = s * Math.min(l, 1 - l);
+    return Math.round((l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255);
+  };
+  return "#" + [f(0), f(8), f(4)].map((v) => v.toString(16).padStart(2, "0")).join("");
+}
+
+/** Color dominante entre los píxeles saturados → tinta plana vívida (como una tinta de serigrafía). */
+async function analyzeColor(file) {
+  const { data } = await sharp(file).resize(160, 160, { fit: "inside" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const bins = Array.from({ length: 36 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+  let hi = 0, n = 0;
+  for (let i = 0; i < data.length; i += 3) {
+    const r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+    const ch = Math.max(r, g, b) - Math.min(r, g, b);
+    n++;
+    if (ch <= 0.25) continue;
+    hi++;
+    const [h] = rgbToHsl(r, g, b);
+    const bin = bins[Math.floor(h * 36) % 36];
+    bin.w += ch; bin.r += r * ch; bin.g += g * ch; bin.b += b * ch;
+  }
+  const amount = hi / n;
+  if (amount < COLOR_MIN) return null;
+  const top = bins.reduce((a, b) => (b.w > a.w ? b : a));
+  const [h, s] = rgbToHsl(top.r / top.w, top.g / top.w, top.b / top.w);
+  return { accent: hslToHex(h, Math.max(0.55, s), 0.5), amount: Math.round(amount * 1000) / 1000 };
+}
+
+/** Plancha de color: tinta plana del acento, alfa = saturación de la obra (800 px, WebP con transparencia). */
+async function makeSpotPlate(src, dest, accent) {
+  const { data, info } = await sharp(src).resize(800, 800, { fit: "inside", withoutEnlargement: true }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const out = Buffer.alloc(info.width * info.height * 4);
+  const ar = parseInt(accent.slice(1, 3), 16), ag = parseInt(accent.slice(3, 5), 16), ab = parseInt(accent.slice(5, 7), 16);
+  for (let i = 0, j = 0; i < data.length; i += 3, j += 4) {
+    const ch = (Math.max(data[i], data[i + 1], data[i + 2]) - Math.min(data[i], data[i + 1], data[i + 2])) / 255;
+    const t = Math.min(1, Math.max(0, (ch - 0.18) / 0.24));
+    out[j] = ar; out[j + 1] = ag; out[j + 2] = ab;
+    out[j + 3] = Math.round(t * t * (3 - 2 * t) * 255);
+  }
+  await sharp(out, { raw: { width: info.width, height: info.height, channels: 4 } }).webp({ quality: 70, alphaQuality: 60 }).toFile(dest);
+}
+
+/** Añade accent/colorAmount/spot a una imagen o al póster de un vídeo (incremental: reusa la plancha). */
+async function colorize(m) {
+  const url = m.type === "video" ? m.poster : (m.srcSet?.ms ?? m.src);
+  if (!url) return;
+  const file = path.join(ROOT, "public", decodeURIComponent(url));
+  if (!existsSync(file)) return;
+  const c = await analyzeColor(file);
+  if (!c) return;
+  const spotUrl = url.replace(/-(ms|md|poster)\.webp$/, (_, k) => (k === "poster" ? "-poster-spot.webp" : "-spot.webp"));
+  const spotFile = path.join(ROOT, "public", decodeURIComponent(spotUrl));
+  if (!existsSync(spotFile) || statSync(spotFile).mtimeMs < statSync(file).mtimeMs) await makeSpotPlate(file, spotFile, c.accent);
+  m.accent = c.accent;
+  m.colorAmount = c.amount;
+  m.spot = spotUrl;
+}
+
+/** info.txt dentro de una carpeta: "Título: …", "Año: 2025", "Técnica: …", "Descripción: …", "Destacado: sí". */
+function readInfoTxt(dir) {
+  const f = readdirSync(dir).find((x) => /^(info|descripci[oó]n|datos)\.txt$/i.test(x));
+  if (!f) return {};
+  const meta = {};
+  for (const line of readFileSync(path.join(dir, f), "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([^:]+?)\s*:\s*(.+)\s*$/);
+    if (!m) continue;
+    const k = m[1].toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const v = m[2].trim();
+    if (k === "titulo" || k === "title") meta.title = v;
+    else if (k === "ano" || k === "year") meta.year = Number(v.match(/\d{4}/)?.[0]) || undefined;
+    else if (k === "tecnica" || k === "medio") meta.medium = v;
+    else if (k === "descripcion" || k === "description") meta.description = v;
+    else if (k === "destacado") meta.featured = /^(s[ií]|yes|true|1)/i.test(v);
+    else if (k === "etiquetas" || k === "tags") meta.tags = v.split(",").map((t) => t.trim()).filter(Boolean);
+  }
+  return meta;
+}
+
 /* ---------- recorrido ---------- */
 
 async function main() {
@@ -214,7 +308,7 @@ async function main() {
   async function addProjectFolder(abs, rel, entry, kind, levels, titleOverride) {
         const info = parseName(entry);
         const metaPath = path.join(abs, "meta.json");
-        const meta = existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, "utf8")) : {};
+        const meta = { ...readInfoTxt(abs), ...(existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, "utf8")) : {}) };
         const slug = uniqueSlug(slugify(meta.title ?? titleOverride ?? entry), rel);
         const dir = path.join(OUT, slug);
         mkdirSync(dir, { recursive: true });
@@ -364,6 +458,13 @@ async function main() {
   }
 
   if (DRY) return;
+  // Color: «segunda tinta» para las piezas con color (imágenes y pósters de vídeo)
+  let colored = 0;
+  for (const p of projects) {
+    for (const m of [...p.results, ...p.process.filter((v) => v.type === "video")]) await colorize(m);
+    if (p.results.some((m) => m.accent) || p.process.some((m) => m.accent)) colored++;
+  }
+  console.log(`◐ ${colored} proyectos con color`);
   // Limpia salidas de proyectos que ya no existen / cambiaron de slug
   const alive = new Set(projects.map((p) => p.slug));
   for (const d of readdirSync(OUT)) {
@@ -371,6 +472,12 @@ async function main() {
   }
   for (const d of readdirSync(OUT).filter((f) => f.startsWith(".tmp-"))) rmSync(path.join(OUT, d), { force: true });
 
+  // Solo reescribe el catálogo si cambió algo (evita commits vacíos en la sincronización automática)
+  const prev = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, "utf8")) : null;
+  if (prev && JSON.stringify(prev.projects) === JSON.stringify(projects)) {
+    console.log(`\n${projects.length} proyectos · catálogo sin cambios`);
+    return;
+  }
   writeFileSync(MANIFEST, JSON.stringify({ generatedAt: new Date().toISOString(), projects }, null, 1));
   console.log(`\n${projects.length} proyectos → src/content/catalog.json`);
 }

@@ -7,3 +7,5 @@ contenido/
 *.log
 .DS_Store
 .claude/
+.env.local
+.papelera/

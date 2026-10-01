@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { extend, useFrame, type ThreeEvent } from "@react-three/fiber";
 import gsap from "gsap";
-import { MathUtils, type Mesh, Vector2 } from "three";
+import { Color, MathUtils, type Mesh, Vector2 } from "three";
 import { InkPlaneMaterial, type InkPlaneMaterialImpl } from "@/shaders/inkPlaneMaterial";
 import { scrollState } from "@/lib/scroll-state";
 import { useQuality } from "@/lib/quality";
@@ -32,6 +32,8 @@ export interface WorkPlaneProps {
   scrollReactive?: boolean;
   /** Resolución de textura según el tamaño en pantalla (ahorra megas y VRAM). */
   texSize?: TexSize;
+  /** Piezas con color: revela el color completo (0 → 1, animado). */
+  colorReveal?: boolean;
 }
 
 /**
@@ -39,7 +41,7 @@ export interface WorkPlaneProps {
  * imperativa (caché LRU), así el mismo plano puede cambiar de obra sin desmontarse:
  * cada cambio vuelve a "imprimir" la lámina con el revelado de tinta.
  */
-export default function WorkPlane({ media, maxW = 2, maxH = 2.4, threshold = 0.5, bleed = 0.8, delay = 0, onHover, onSelect, scrollReactive = true, texSize = "md" }: WorkPlaneProps) {
+export default function WorkPlane({ media, maxW = 2, maxH = 2.4, threshold = 0.5, bleed = 0.8, delay = 0, onHover, onSelect, scrollReactive = true, texSize = "md", colorReveal = false }: WorkPlaneProps) {
   const mesh = useRef<Mesh>(null);
   const mat = useRef<InkPlaneMaterialImpl>(null);
   const hovered = useRef(false);
@@ -49,6 +51,22 @@ export default function WorkPlane({ media, maxW = 2, maxH = 2.4, threshold = 0.5
   const h = Math.min(maxH, maxW / aspect);
   const w = h * aspect;
   const mediaKey = mediaTextureUrl(media, texSize);
+  const accent = media.type === "image" ? media.accent : undefined;
+
+  // Segunda tinta: color dominante de la pieza (si tiene color)
+  useEffect(() => {
+    const u = mat.current?.uniforms;
+    if (!u) return;
+    u.uSpot.value = accent ? 1 : 0;
+    if (accent) (u.uAccent.value as Color).set(accent);
+  }, [accent]);
+
+  useEffect(() => {
+    const u = mat.current?.uniforms;
+    if (!u) return;
+    const tw = gsap.to(u.uColorReveal, { value: colorReveal ? 1 : 0, duration: colorReveal ? 1.6 : 0.8, ease: "power2.inOut" });
+    return () => void tw.kill();
+  }, [colorReveal]);
 
   useEffect(() => {
     const m = mat.current;

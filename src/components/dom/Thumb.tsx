@@ -7,8 +7,26 @@ import { drawPlate, plateSize } from "@/lib/plate";
 /**
  * Miniatura universal: <img> responsive (srcset + blur) para obras reales,
  * <canvas> procedural para láminas demo. Todo diferido hasta entrar en vista.
+ *
+ * Piezas con color («segunda tinta»): 1) la obra en tinta (gris), 2) la plancha de color
+ * plana en multiplicar con registro desalineado, 3) el color real, que florece desde el
+ * cursor como acuarela (máscara radial animada). `colorOn` lo muestra entero.
  */
-export default function Thumb({ media, alt, sizes = "(min-width: 768px) 25vw, 50vw", className = "", priority = false }: { media: ResultMedia; alt: string; sizes?: string; className?: string; priority?: boolean }) {
+export default function Thumb({
+  media,
+  alt,
+  sizes = "(min-width: 768px) 25vw, 50vw",
+  className = "",
+  priority = false,
+  colorOn = false,
+}: {
+  media: ResultMedia;
+  alt: string;
+  sizes?: string;
+  className?: string;
+  priority?: boolean;
+  colorOn?: boolean;
+}) {
   const ratio = `${media.width} / ${media.height}`;
 
   if (media.type === "plate") {
@@ -20,15 +38,25 @@ export default function Thumb({ media, alt, sizes = "(min-width: 768px) 25vw, 50
   }
 
   const set = media.srcSet;
+  const srcSet = set ? [`${set.sm} 480w`, set.ms && `${set.ms} 800w`, `${set.md} 1280w`].filter(Boolean).join(", ") : undefined;
+  const hasColor = !!media.accent;
+  // Posición del cursor para que el color florezca desde ahí
+  const track = (e: React.PointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--cx", `${((e.clientX - r.left) / r.width) * 100}%`);
+    e.currentTarget.style.setProperty("--cy", `${((e.clientY - r.top) / r.height) * 100}%`);
+  };
   return (
     <div
-      className={`relative overflow-hidden bg-paper ${className}`}
+      className={`relative overflow-hidden bg-paper ${hasColor ? "has-color" : ""} ${colorOn ? "color-on" : ""} ${className}`}
       style={{ aspectRatio: ratio, backgroundImage: media.blur ? `url(${media.blur})` : undefined, backgroundSize: "cover" }}
+      onPointerEnter={hasColor ? track : undefined}
+      onPointerMove={hasColor ? track : undefined}
     >
       {media.src && (
         <img
           src={media.src}
-          srcSet={set ? [`${set.sm} 480w`, set.ms && `${set.ms} 800w`, `${set.md} 1280w`].filter(Boolean).join(", ") : undefined}
+          srcSet={srcSet}
           sizes={sizes}
           alt={alt}
           width={media.width}
@@ -37,6 +65,12 @@ export default function Thumb({ media, alt, sizes = "(min-width: 768px) 25vw, 50
           decoding="async"
           className="absolute inset-0 h-full w-full object-cover grayscale"
         />
+      )}
+      {hasColor && media.spot && (
+        <img src={media.spot} alt="" aria-hidden loading="lazy" decoding="async" className="spot-plate pointer-events-none absolute inset-0 h-full w-full object-cover" />
+      )}
+      {hasColor && media.src && (
+        <img src={media.src} srcSet={srcSet} sizes={sizes} alt="" aria-hidden loading="lazy" decoding="async" className="color-bloom pointer-events-none absolute inset-0 h-full w-full object-cover" />
       )}
     </div>
   );

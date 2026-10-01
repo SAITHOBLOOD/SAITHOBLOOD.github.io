@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { site } from "@/content/site";
+import { contactHref, contactLabel, site } from "@/content/site";
 
 export default function SiteFooter() {
   return (
@@ -8,8 +8,8 @@ export default function SiteFooter() {
         <p className="font-mono text-[11px] uppercase tracking-[0.25em] opacity-60">¿Un encargo, un póster, una portada?</p>
         <img src={site.logo.paper} alt={`Logo de ${site.name}`} width={160} height={154} className="h-16 w-auto shrink-0 opacity-90 md:h-28" />
       </div>
-      <a href={`mailto:${site.email}`} className="mt-4 block break-all font-display text-[11vw] italic leading-[0.9] hover:underline md:text-[7vw]">
-        {site.email}
+      <a href={contactHref} target={site.email ? undefined : "_blank"} rel="noreferrer" className="mt-4 block break-all font-display text-[11vw] italic leading-[0.9] hover:underline md:text-[7vw]">
+        {contactLabel}
       </a>
       <div className="mt-16 flex flex-wrap items-end justify-between gap-6 font-mono text-[11px] uppercase tracking-[0.25em]">
         <div className="flex gap-6">

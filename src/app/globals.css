@@ -155,3 +155,38 @@ body {
     animation: none;
   }
 }
+
+/* ───────── Color como «segunda tinta» ───────── */
+/* La plancha de color se imprime en multiplicar, un poco fuera de registro (como riso/serigrafía) */
+.spot-plate {
+  mix-blend-mode: multiply;
+  transform: translate(1.5px, -1px);
+  opacity: 0.92;
+}
+/* El color real florece desde el cursor como una mancha de acuarela */
+@property --bloom {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+.has-color {
+  --cx: 50%;
+  --cy: 50%;
+  transition: --bloom 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.color-bloom {
+  -webkit-mask-image: radial-gradient(circle at var(--cx) var(--cy), #000 calc(var(--bloom) - 18%), transparent var(--bloom));
+  mask-image: radial-gradient(circle at var(--cx) var(--cy), #000 calc(var(--bloom) - 18%), transparent var(--bloom));
+}
+.card:hover .has-color,
+.has-color:hover,
+.has-color.color-on {
+  --bloom: 160%;
+}
+.color-dot {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ink) 35%, transparent);
+}

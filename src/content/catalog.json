@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-01T00:08:11.873Z",
+ "generatedAt": "2026-10-01T00:22:37.949Z",
  "projects": [
   {
    "slug": "animacion-98b993",
@@ -19,7 +19,10 @@
      "height": 1280,
      "duration": 3,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#39c644",
+     "colorAmount": 0.33,
+     "spot": "/obras/animacion-98b993/obra-poster-spot.webp"
     }
    ]
   },
@@ -41,7 +44,10 @@
      "height": 1920,
      "duration": 5.333333,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#d66c29",
+     "colorAmount": 0.242,
+     "spot": "/obras/animacion-a78121/obra-poster-spot.webp"
     }
    ]
   },
@@ -63,7 +69,10 @@
      "height": 1920,
      "duration": 6,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#f70848",
+     "colorAmount": 0.36,
+     "spot": "/obras/animacion-ecb08d/obra-poster-spot.webp"
     }
    ]
   },
@@ -85,7 +94,10 @@
      "height": 1920,
      "duration": 7.666667,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#5a00ff",
+     "colorAmount": 0.825,
+     "spot": "/obras/animacion-23a313/obra-poster-spot.webp"
     }
    ]
   },
@@ -107,7 +119,10 @@
      "height": 1920,
      "duration": 2.8,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#c67839",
+     "colorAmount": 0.043,
+     "spot": "/obras/animacion-b28edc/obra-poster-spot.webp"
     }
    ]
   },
@@ -153,7 +168,10 @@
      "height": 720,
      "duration": 16,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#46c639",
+     "colorAmount": 0.275,
+     "spot": "/obras/bosque-clip-2-0/obra-poster-spot.webp"
     }
    ]
   },
@@ -176,7 +194,10 @@
      "height": 1500,
      "duration": 18.625,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#c69c39",
+     "colorAmount": 0.344,
+     "spot": "/obras/burning-man-1-pt/obra-poster-spot.webp"
     }
    ]
   },
@@ -199,7 +220,10 @@
      "height": 1920,
      "duration": 10.5,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#d7cb28",
+     "colorAmount": 0.211,
+     "spot": "/obras/burningman/obra-poster-spot.webp"
     }
    ]
   },
@@ -245,7 +269,10 @@
      "height": 1920,
      "duration": 14,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#fbfe01",
+     "colorAmount": 0.3,
+     "spot": "/obras/burningwings-final/obra-poster-spot.webp"
     }
    ]
   },
@@ -313,7 +340,10 @@
      "height": 2276,
      "duration": 26.866016,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#e8b417",
+     "colorAmount": 0.361,
+     "spot": "/obras/animacion-cda2b4/obra-poster-spot.webp"
     }
    ]
   },
@@ -403,7 +433,10 @@
      "height": 720,
      "duration": 3.333333,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#8e39c6",
+     "colorAmount": 0.29,
+     "spot": "/obras/animacion-af6647/obra-poster-spot.webp"
     }
    ]
   },
@@ -425,7 +458,10 @@
      "height": 720,
      "duration": 23.833008,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#da9625",
+     "colorAmount": 0.12,
+     "spot": "/obras/animacion-2b5888/obra-poster-spot.webp"
     }
    ]
   },
@@ -491,7 +527,10 @@
      "height": 720,
      "duration": 5.25,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#042bfb",
+     "colorAmount": 0.443,
+     "spot": "/obras/animacion-bfbac0/obra-poster-spot.webp"
     }
    ]
   },
@@ -536,7 +575,10 @@
      "height": 352,
      "duration": 11.866667,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#1097ef",
+     "colorAmount": 0.911,
+     "spot": "/obras/animacion-20220609/obra-poster-spot.webp"
     }
    ]
   },
@@ -558,7 +600,10 @@
      "height": 352,
      "duration": 15.916667,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#09a1f6",
+     "colorAmount": 0.928,
+     "spot": "/obras/animacion-20220609-2290ba/obra-poster-spot.webp"
     }
    ]
   },
@@ -4573,7 +4618,10 @@
     "tex": "/obras/ilustracion-c7b101/obra-tex.webp",
     "width": 964,
     "height": 1280,
-    "blur": "data:image/webp;base64,UklGRpwAAABXRUJQVlA4IJAAAADQAwCdASoQABUAPu1iqU2ppaOiMAgBMB2JbAC7AYv+obi9tN4VjQAA+yPb1bGZSWHBRMYfWXlG0Sfvm/zF7RFlgu3+rL4pGO8i1SDOi7YfE2ZDMMsjdWLP+jeDmHCxxeichq02X+2CAc+GW6WdqvkttzTcGWp3/0VBTAWOXz0yon8JWd6jxfyJiL0EdF84AAA="
+    "blur": "data:image/webp;base64,UklGRpwAAABXRUJQVlA4IJAAAADQAwCdASoQABUAPu1iqU2ppaOiMAgBMB2JbAC7AYv+obi9tN4VjQAA+yPb1bGZSWHBRMYfWXlG0Sfvm/zF7RFlgu3+rL4pGO8i1SDOi7YfE2ZDMMsjdWLP+jeDmHCxxeichq02X+2CAc+GW6WdqvkttzTcGWp3/0VBTAWOXz0yon8JWd6jxfyJiL0EdF84AAA=",
+    "accent": "#f0d50f",
+    "colorAmount": 0.606,
+    "spot": "/obras/ilustracion-c7b101/obra-spot.webp"
    },
    "results": [
     {
@@ -4588,7 +4636,10 @@
      "tex": "/obras/ilustracion-c7b101/obra-tex.webp",
      "width": 964,
      "height": 1280,
-     "blur": "data:image/webp;base64,UklGRpwAAABXRUJQVlA4IJAAAADQAwCdASoQABUAPu1iqU2ppaOiMAgBMB2JbAC7AYv+obi9tN4VjQAA+yPb1bGZSWHBRMYfWXlG0Sfvm/zF7RFlgu3+rL4pGO8i1SDOi7YfE2ZDMMsjdWLP+jeDmHCxxeichq02X+2CAc+GW6WdqvkttzTcGWp3/0VBTAWOXz0yon8JWd6jxfyJiL0EdF84AAA="
+     "blur": "data:image/webp;base64,UklGRpwAAABXRUJQVlA4IJAAAADQAwCdASoQABUAPu1iqU2ppaOiMAgBMB2JbAC7AYv+obi9tN4VjQAA+yPb1bGZSWHBRMYfWXlG0Sfvm/zF7RFlgu3+rL4pGO8i1SDOi7YfE2ZDMMsjdWLP+jeDmHCxxeichq02X+2CAc+GW6WdqvkttzTcGWp3/0VBTAWOXz0yon8JWd6jxfyJiL0EdF84AAA=",
+     "accent": "#f0d50f",
+     "colorAmount": 0.606,
+     "spot": "/obras/ilustracion-c7b101/obra-spot.webp"
     }
    ],
    "process": []
@@ -4684,7 +4735,10 @@
      "tex": "/obras/dino-west/img-3488-tex.webp",
      "width": 720,
      "height": 1280,
-     "blur": "data:image/webp;base64,UklGRq4AAABXRUJQVlA4IKIAAAAQBACdASoQABwAPu1Ct1apoqakGAEwHYloAAPiRln9fIcvvDgV//eHEgD+/Heq8BX5V8wm/KhnBH5UkCOEV2BLT6NxG7eS92pXlCI+88PdiRlaYf4kf3UD0Zw0qxQPb1VgFT+0efpqP3L4lNurkt+0e9/X/NxXaX6laam1Mr4q/Dw489JUVqeLVkwBlJQ/Ok/q2/WnfUvb3/PT8hr+7sUUAAA="
+     "blur": "data:image/webp;base64,UklGRq4AAABXRUJQVlA4IKIAAAAQBACdASoQABwAPu1Ct1apoqakGAEwHYloAAPiRln9fIcvvDgV//eHEgD+/Heq8BX5V8wm/KhnBH5UkCOEV2BLT6NxG7eS92pXlCI+88PdiRlaYf4kf3UD0Zw0qxQPb1VgFT+0efpqP3L4lNurkt+0e9/X/NxXaX6laam1Mr4q/Dw489JUVqeLVkwBlJQ/Ok/q2/WnfUvb3/PT8hr+7sUUAAA=",
+     "accent": "#e91b16",
+     "colorAmount": 0.122,
+     "spot": "/obras/dino-west/img-3488-spot.webp"
     },
     {
      "type": "image",
@@ -4830,7 +4884,10 @@
      "height": 720,
      "duration": 1.5,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#c6a239",
+     "colorAmount": 0.035,
+     "spot": "/obras/nidra/53-sin-titulo-poster-spot.webp"
     },
     {
      "type": "video",
@@ -4860,7 +4917,10 @@
      "height": 720,
      "duration": 3.416667,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#ed6f12",
+     "colorAmount": 0.455,
+     "spot": "/obras/nidra/71-sin-titulo-poster-spot.webp"
     },
     {
      "type": "video",
@@ -4870,7 +4930,10 @@
      "height": 720,
      "duration": 5.083333,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#7839c6",
+     "colorAmount": 0.303,
+     "spot": "/obras/nidra/74-sin-titulo-poster-spot.webp"
     },
     {
      "type": "video",
@@ -4953,7 +5016,10 @@
      "tex": "/obras/tunhouse/img-2899-tex.webp",
      "width": 809,
      "height": 1280,
-     "blur": "data:image/webp;base64,UklGRhYBAABXRUJQVlA4IAoBAADQBACdASoQABkAPu1iqU2ppaOiMAgBMB2JbACdIDZgqhXNEZgJ3mZtcPi+GDxYwAD+rArHqmRHSA2uYWfuCEGSKapoiM0asAtEN6Rtkh819QUNbS1Wm3cMDwQI8xCZhrwO1QeeHJmfgnIv+eGX+TCC9XWbNnCAjIvEC+LlNE9YTkr5EFtaJ3SPd8eIq3yOy29JCVyOcfjkmDniyeM2qIQ5VKY+Igk7YOgRyZ6rOMAEyUDYewLr70FS0ZIBfjg7lrczViPP7SlT/pz6Bvp/vYaBrf9Rzk2oxvmK6WIbH8dz1Cr9f/i/qU1wqf3MoLLk9jf+hQZP8m/hVLqP+SI3PeyW9pqjU/q7MIAAAA=="
+     "blur": "data:image/webp;base64,UklGRhYBAABXRUJQVlA4IAoBAADQBACdASoQABkAPu1iqU2ppaOiMAgBMB2JbACdIDZgqhXNEZgJ3mZtcPi+GDxYwAD+rArHqmRHSA2uYWfuCEGSKapoiM0asAtEN6Rtkh819QUNbS1Wm3cMDwQI8xCZhrwO1QeeHJmfgnIv+eGX+TCC9XWbNnCAjIvEC+LlNE9YTkr5EFtaJ3SPd8eIq3yOy29JCVyOcfjkmDniyeM2qIQ5VKY+Igk7YOgRyZ6rOMAEyUDYewLr70FS0ZIBfjg7lrczViPP7SlT/pz6Bvp/vYaBrf9Rzk2oxvmK6WIbH8dz1Cr9f/i/qU1wqf3MoLLk9jf+hQZP8m/hVLqP+SI3PeyW9pqjU/q7MIAAAA==",
+     "accent": "#eddb12",
+     "colorAmount": 0.45,
+     "spot": "/obras/tunhouse/img-2899-spot.webp"
     }
    ],
    "process": [
@@ -4965,7 +5031,10 @@
      "height": 1920,
      "duration": 26.833008,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#1b9ae4",
+     "colorAmount": 0.6,
+     "spot": "/obras/tunhouse/nuevo-plano-1-poster-spot.webp"
     },
     {
      "type": "video",
@@ -4975,7 +5044,10 @@
      "height": 1920,
      "duration": 22,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#f1dd0e",
+     "colorAmount": 0.15,
+     "spot": "/obras/tunhouse/nuevo-plano-2-poster-spot.webp"
     },
     {
      "type": "video",
@@ -4985,7 +5057,10 @@
      "height": 1920,
      "duration": 2.166667,
      "label": "animación",
-     "role": "result"
+     "role": "result",
+     "accent": "#2ac9d5",
+     "colorAmount": 0.529,
+     "spot": "/obras/tunhouse/nuevo-plano-3-poster-spot.webp"
     }
    ]
   }

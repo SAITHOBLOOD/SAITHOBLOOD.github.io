@@ -17,6 +17,8 @@ export interface ArchiveItem {
   photos: number;
   timelapses: number;
   animations: number;
+  /** Tinta dominante si la pieza tiene color. */
+  accent?: string;
 }
 
 const PAGE = 24;
@@ -31,6 +33,7 @@ export default function Archive({ items }: { items: ArchiveItem[] }) {
   const [kind, setKind] = useState<ProjectKind | "all">("all");
   const [year, setYear] = useState<number | "all">("all");
   const [withProcess, setWithProcess] = useState(false);
+  const [withColor, setWithColor] = useState(false);
   const [q, setQ] = useState("");
   const [view, setView] = useState<View>("grid");
   const [limit, setLimit] = useState(PAGE);
@@ -49,12 +52,13 @@ export default function Archive({ items }: { items: ArchiveItem[] }) {
       if (kind !== "all" && i.kind !== kind) return false;
       if (year !== "all" && i.year !== year) return false;
       if (withProcess && !i.timelapses) return false;
+      if (withColor && !i.accent) return false;
       if (!needle) return true;
       return String(i.n).padStart(3, "0").includes(needle) || displayTitle(i).toLowerCase().includes(needle) || (i.medium ?? "").toLowerCase().includes(needle);
     });
-  }, [items, kind, year, withProcess, q]);
+  }, [items, kind, year, withProcess, withColor, q]);
 
-  useEffect(() => setLimit(PAGE), [kind, year, withProcess, q]);
+  useEffect(() => setLimit(PAGE), [kind, year, withProcess, withColor, q]);
 
   useEffect(() => {
     const el = sentinel.current;
@@ -100,6 +104,11 @@ export default function Archive({ items }: { items: ArchiveItem[] }) {
           <Chip active={withProcess} onClick={() => setWithProcess((v) => !v)}>
             ▶ Con proceso
           </Chip>
+          {items.some((i) => i.accent) && (
+            <Chip active={withColor} onClick={() => setWithColor((v) => !v)}>
+              ◐ Color <sup>{items.filter((i) => i.accent).length}</sup>
+            </Chip>
+          )}
           <div className="flex shrink-0 gap-2 md:hidden" role="group" aria-label="Vista">
             <Chip active={view === "grid"} onClick={() => setView("grid")}>
               Cuadrícula
@@ -155,6 +164,7 @@ function Meta({ item }: { item: ArchiveItem }) {
   return (
     <div className="mt-2 flex items-baseline justify-between gap-2">
       <p className="truncate">
+        {item.accent && <span className="color-dot mr-1.5 align-middle" style={{ background: item.accent }} title="Pieza con color" />}
         <span className="font-mono text-[10px] tracking-[0.15em]">{catalogCode(item)}</span>{" "}
         <span className={`font-display text-lg ${item.title ? "" : "italic opacity-50"}`}>{displayTitle(item)}</span>
       </p>

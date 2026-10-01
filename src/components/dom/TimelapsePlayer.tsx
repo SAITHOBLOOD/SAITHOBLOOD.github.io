@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ProcessMedia } from "@/content/types";
 import { PlateCanvas } from "./Thumb";
+import { useUI } from "@/lib/ui-store";
 
 const RATES = [1, 2, 4];
 const PLATE_DURATION = 14; // s, duración del timelapse simulado (modo demo)
@@ -15,6 +16,9 @@ const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${Str
  * Autoplay silencioso solo mientras está en pantalla.
  */
 export default function TimelapsePlayer({ media, title }: { media: ProcessMedia; title: string }) {
+  // Vídeos con color: en tinta (gris) por defecto; color al pasar el cursor o con el botón «Color»
+  const colorMode = useUI((s) => s.colorMode);
+  const hasColor = media.type === "video" && !!media.accent;
   const box = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
@@ -89,7 +93,7 @@ export default function TimelapsePlayer({ media, title }: { media: ProcessMedia;
             preload="none"
             onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
             onTimeUpdate={(e) => !scrubbing.current && setProgress(e.currentTarget.currentTime / (e.currentTarget.duration || 1))}
-            className="absolute inset-0 h-full w-full object-contain grayscale"
+            className={`absolute inset-0 h-full w-full object-contain transition-[filter] duration-700 ${hasColor && colorMode ? "" : "grayscale"} ${hasColor ? "group-hover:grayscale-0" : ""}`}
           />
         ) : (
           <PlateCanvas seed={media.seed} width={media.width} height={media.height} maxSide={900} progress={progress} className="absolute inset-0 h-full w-full" />

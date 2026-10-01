@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getProjects, getStats } from "@/content/projects";
 import { site } from "@/content/site";
-import { animationsOf, timelapsesOf, toCoverItem } from "@/content/types";
+import { accentOf, animationsOf, displayTitle, isCollection, timelapsesOf, toCoverItem, type ResultMedia } from "@/content/types";
+import ProjectsShowcase, { type ShowcaseItem } from "@/components/dom/ProjectsShowcase";
 import { HomeStage } from "@/components/stages";
 import SmoothScroll from "@/components/dom/SmoothScroll";
 import Archive, { type ArchiveItem } from "@/components/dom/Archive";
@@ -14,6 +15,25 @@ export default function Home() {
   const stats = getStats();
   const videos = { eye: site.hero.eye, backdrop: site.hero.backdrop, eyePoster: site.hero.eye, backdropPoster: site.hero.backdropPoster };
   const orbit = [...projects.filter((p) => p.featured), ...projects.filter((p) => !p.featured)].slice(0, 7).map(toCoverItem);
+  // Proyectos agrupados (carpetas «Proyecto X»): tira con sus piezas (fotos + pósters de vídeo)
+  const showcase: ShowcaseItem[] = projects.filter(isCollection).map((p) => {
+    const posters: ResultMedia[] = p.process.flatMap((v) =>
+      v.type === "video" && v.poster ? [{ type: "image", src: v.poster, width: v.width, height: v.height, accent: v.accent, spot: v.spot }] : [],
+    );
+    const strip = [...p.results, ...posters];
+    return {
+      slug: p.slug,
+      title: displayTitle(p),
+      kind: p.kind,
+      year: p.year,
+      pieces: strip.length,
+      photos: p.results.length,
+      videos: p.process.length,
+      accent: accentOf(p) ?? strip.map((m) => (m.type === "image" ? m.accent : undefined)).find(Boolean),
+      description: p.description,
+      strip: strip.slice(0, 6),
+    };
+  });
   const archive: ArchiveItem[] = projects.map((p) => ({
     slug: p.slug,
     n: p.n,
@@ -25,6 +45,7 @@ export default function Home() {
     photos: p.results.length,
     timelapses: timelapsesOf(p).length,
     animations: animationsOf(p).length,
+    accent: accentOf(p),
   }));
 
   return (
@@ -81,6 +102,7 @@ export default function Home() {
         </Link>
       </section>
 
+      <ProjectsShowcase items={showcase} />
       <Archive items={archive} />
       <SiteFooter />
     </SmoothScroll>

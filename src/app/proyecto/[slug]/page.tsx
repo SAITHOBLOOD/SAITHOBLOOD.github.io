@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getNeighbors, getProject, getProjects } from "@/content/projects";
-import { animationsOf, catalogCode, displayTitle, displayYear, KIND_LABEL, timelapsesOf } from "@/content/types";
+import { accentOf, animationsOf, catalogCode, displayTitle, displayYear, KIND_LABEL, timelapsesOf } from "@/content/types";
+import ColorToggle from "@/components/dom/ColorToggle";
 import { CoverStage } from "@/components/stages";
 import SmoothScroll from "@/components/dom/SmoothScroll";
 import Gallery from "@/components/dom/Gallery";
@@ -30,6 +31,8 @@ export default async function ProjectPage({ params }: Params) {
   const title = displayTitle(p);
   const coverRatio = p.cover.width / p.cover.height;
   const anims = animationsOf(p);
+  // El botón «Color» aparece si CUALQUIER pieza del proyecto tiene color (no solo la portada)
+  const projectAccent = accentOf(p) ?? [...p.results, ...p.process].map((m) => (m.type !== "plate" ? m.accent : undefined)).find(Boolean);
   const timelapses = timelapsesOf(p);
   const sections = [anims.length && "anim", timelapses.length && "proc", p.results.length && "res"].filter(Boolean) as string[];
   const roman = (k: string) => ["I", "II", "III"][sections.indexOf(k)];
@@ -48,6 +51,12 @@ export default async function ProjectPage({ params }: Params) {
               <h1 className={`mt-2 font-display text-6xl leading-[0.9] md:text-7xl ${p.title ? "" : "italic opacity-60"}`}>{title}</h1>
               {p.description && <p className="mt-6 max-w-md font-display text-xl leading-snug">{p.description}</p>}
             </div>
+            {projectAccent && (
+              <div className="flex flex-wrap items-center gap-3">
+                <ColorToggle accent={projectAccent} />
+                <p className="max-w-[16rem] font-mono text-[10px] uppercase leading-relaxed tracking-[0.18em] opacity-60">Pieza a color: en tinta se imprime con una segunda tinta. Pasa el cursor para ver el color.</p>
+              </div>
+            )}
             <dl className="grid grid-cols-2 gap-y-3 border-t border-ink pt-4 font-mono text-[11px] uppercase tracking-[0.18em]">
               <dt className="opacity-50">Tipo</dt>
               <dd>{KIND_LABEL[p.kind]}</dd>
@@ -63,7 +72,7 @@ export default async function ProjectPage({ params }: Params) {
               <dd>
                 {[
                   p.results.length && `${p.results.length} foto${p.results.length === 1 ? "" : "s"}`,
-                  anims.length && `${anims.length} animación${anims.length === 1 ? "" : "es"}`,
+                  anims.length && `${anims.length} ${anims.length === 1 ? "animación" : "animaciones"}`,
                   timelapses.length && `${timelapses.length} timelapse${timelapses.length === 1 ? "" : "s"}`,
                 ]
                   .filter(Boolean)

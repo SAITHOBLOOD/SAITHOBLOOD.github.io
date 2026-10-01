@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getStats } from "@/content/projects";
-import { site } from "@/content/site";
+import { contactHref, contactLabel, site } from "@/content/site";
 import { InfoStage } from "@/components/stages";
 import SmoothScroll from "@/components/dom/SmoothScroll";
 import SiteFooter from "@/components/dom/SiteFooter";
@@ -55,7 +55,7 @@ export default function Info() {
             </ul>
           </section>
 
-          <section className="mt-16">
+          {site.timeline.length > 0 && <section className="mt-16">
             <h2 className="font-mono text-[11px] uppercase tracking-[0.25em] opacity-60">Recorrido</h2>
             <ol className="mt-4 border-t border-ink">
               {site.timeline.map((t) => (
@@ -65,12 +65,12 @@ export default function Info() {
                 </li>
               ))}
             </ol>
-          </section>
+          </section>}
 
           <section className="mt-16">
             <h2 className="font-mono text-[11px] uppercase tracking-[0.25em] opacity-60">Contacto</h2>
-            <a href={`mailto:${site.email}`} className="ink-link mt-4 inline-block font-display text-4xl italic">
-              {site.email}
+            <a href={contactHref} target={site.email ? undefined : "_blank"} rel="noreferrer" className="ink-link mt-4 inline-block font-display text-4xl italic">
+              {contactLabel}
             </a>
             <div className="mt-4 flex gap-6 font-mono text-[11px] uppercase tracking-[0.25em]">
               {site.links.map((l) => (

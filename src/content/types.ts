@@ -25,6 +25,10 @@ export interface ImageMedia {
   /** blurDataURL 16 px. */
   blur?: string;
   alt?: string;
+  /** Piezas con color: tinta dominante (#rrggbb), proporción de píxeles saturados y plancha de «segunda tinta». */
+  accent?: string;
+  colorAmount?: number;
+  spot?: string;
 }
 
 export interface VideoMedia {
@@ -37,6 +41,10 @@ export interface VideoMedia {
   label?: string;
   /** result = la animación terminada · process = timelapse / registro de proceso. */
   role?: "result" | "process";
+  /** Piezas con color: tinta dominante (#rrggbb), proporción de píxeles saturados y plancha de «segunda tinta». */
+  accent?: string;
+  colorAmount?: number;
+  spot?: string;
 }
 
 /** Lámina procedural (modo demo, sin assets). `timelapse` la anima como proceso. */
@@ -87,3 +95,8 @@ export const displayYear = (year: number) => (year > 0 ? String(year) : "s. f.")
 export const isAnimation = (m: ProcessMedia) => m.type === "video" && m.role === "result";
 export const timelapsesOf = (p: Pick<Project, "process">) => p.process.filter((m) => !isAnimation(m));
 export const animationsOf = (p: Pick<Project, "process">) => p.process.filter(isAnimation);
+
+/** Proyecto agrupado (carpeta en Drive: «Proyecto X»), no una pieza suelta. */
+export const isCollection = (p: Pick<Project, "source">) => !!p.source && !/\.[a-z0-9]{2,4}$/i.test(p.source);
+/** Tinta dominante de la portada, si la pieza tiene color. */
+export const accentOf = (p: Pick<Project, "cover">) => (p.cover.type === "image" ? p.cover.accent : undefined);

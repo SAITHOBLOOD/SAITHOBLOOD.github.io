@@ -54,6 +54,9 @@ uniform float uBleed;
 uniform float uScrollVelocity;
 uniform vec3  uInk;
 uniform vec3  uPaper;
+uniform float uSpot;        // 1 = pieza con color
+uniform vec3  uAccent;      // tinta dominante (segunda tinta)
+uniform float uColorReveal; // 0 = tinta · 1 = color completo (botón «Color» de la ficha)
 
 varying vec2 vUv;
 
@@ -85,13 +88,14 @@ void main() {
   }
 
   vec2 tuv = coverUv(uv, uPlaneSize, uImageSize);
-  float tone = luma(texture2D(uTexture, tuv).rgb);
+  vec3 src = texture2D(uTexture, tuv).rgb;
+  float tone = luma(src);
 
   // --- En reposo: la obra fiel. Solo niveles (papel → blanco, tinta → negro).
   float ink = smoothstep(0.06, 0.9, tone);
 
-  // --- Bajo el cursor: binarización de grabado con bordes de tinta irregulares
-  if (falloff > 0.002) {
+  // --- Bajo el cursor (solo piezas en B/N): binarización con bordes de tinta irregulares
+  if (falloff > 0.002 && uSpot < 0.5) {
     float edgeNoise = fbm(vUv * 60.0) - 0.5;              // fibra del papel
     float bleed = falloff * (0.25 + 0.1 * sin(uTime * 2.0));
     float th = uThreshold + edgeNoise * 0.18 + bleed;     // la tinta avanza cerca del cursor
@@ -104,6 +108,28 @@ void main() {
   ink = clamp(ink + grain * 0.05, 0.0, 1.0);
 
   vec3 color = mix(uInk, uPaper, ink);
+
+  // --- COLOR como «segunda tinta» (serigrafía/riso) ---
+  if (uSpot > 0.5) {
+    // 1) Plancha de color: tinta plana del acento donde la obra está saturada,
+    //    con registro desalineado (muestreo desplazado) e impresa en multiplicar.
+    vec3 off = texture2D(uTexture, tuv + vec2(0.003, -0.0022)).rgb;
+    float sat = max(max(off.r, off.g), off.b) - min(min(off.r, off.g), off.b);
+    float plate = smoothstep(0.18, 0.42, sat) * (0.82 + grain * 0.6);
+    color = mix(color, color * uAccent, clamp(plate, 0.0, 1.0));
+
+    // 2) Acuarela: el color completo florece desde el cursor (o toda la obra con el botón)
+    float r = uHover * 0.45 + uColorReveal * 1.6;
+    if (r > 0.001) {
+      float n = fbm(vUv * 4.0 + uTime * 0.05) - 0.5;
+      float dist = mix(d, distance(vUv, vec2(0.5)), uColorReveal);
+      float bloom = 1.0 - smoothstep(r - 0.14, r, dist + n * 0.3);
+      vec3 full = src * (0.96 + grain * 0.08);
+      color = mix(color, full, bloom);
+      // borde de pigmento húmedo, más oscuro, como en la acuarela
+      color *= 1.0 - 0.18 * bloom * (1.0 - smoothstep(0.0, 0.05, abs(dist + n * 0.3 - (r - 0.07))));
+    }
+  }
 
   // --- Revelado por disolución de tinta ---
   // uReveal 0 → papel limpio; 1 → obra completa. El frente avanza por un campo fBm
@@ -137,6 +163,9 @@ export const InkPlaneMaterial = shaderMaterial(
     uScrollVelocity: 0,
     uInk: new Color("#0a0a0a"),
     uPaper: new Color("#ecebe6"),
+    uSpot: 0,
+    uAccent: new Color("#ffffff"),
+    uColorReveal: 0,
   },
   vertexShader,
   fragmentShader,

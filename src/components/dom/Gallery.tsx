@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ResultMedia } from "@/content/types";
 import Thumb, { PlateCanvas } from "./Thumb";
+import { useUI } from "@/lib/ui-store";
 
 /** Fotos del resultado + visor a pantalla completa (←/→, Esc, swipe). */
 export default function Gallery({ items, title }: { items: ResultMedia[]; title: string }) {
+  const colorMode = useUI((s) => s.colorMode);
   const [open, setOpen] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const touchX = useRef(0);
@@ -38,7 +40,7 @@ export default function Gallery({ items, title }: { items: ResultMedia[]; title:
         {items.map((m, i) => (
           <li key={i} className="mb-6 break-inside-avoid">
             <button type="button" onClick={() => setOpen(i)} className="block w-full cursor-zoom-in" aria-label={`Ampliar foto ${i + 1} de ${title}`}>
-              <Thumb media={m} alt={`${title} — foto ${i + 1}`} sizes={single ? "100vw" : "50vw"} />
+              <Thumb media={m} alt={`${title} — foto ${i + 1}`} sizes={single ? "100vw" : "50vw"} colorOn={colorMode} />
             </button>
           </li>
         ))}

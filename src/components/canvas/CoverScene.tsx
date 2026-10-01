@@ -5,12 +5,14 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, type Group } from "three";
 import type { ResultMedia } from "@/content/types";
 import WorkPlane from "./WorkPlane";
+import { useUI } from "@/lib/ui-store";
 
 /**
  * Portada del proyecto: la obra ocupa el lienzo, se inclina con el cursor como una
  * lámina sostenida en la mano y la tinta se vuelve líquida bajo el puntero.
  */
 export default function CoverScene({ media }: { media: ResultMedia }) {
+  const colorMode = useUI((s) => s.colorMode);
   const g = useRef<Group>(null);
   const { viewport } = useThree();
 
@@ -22,7 +24,7 @@ export default function CoverScene({ media }: { media: ResultMedia }) {
 
   return (
     <group ref={g}>
-      <WorkPlane media={media} maxW={viewport.width * 0.92} maxH={viewport.height * 0.92} bleed={0.4} scrollReactive={false} texSize="tex" />
+      <WorkPlane media={media} maxW={viewport.width * 0.92} maxH={viewport.height * 0.92} bleed={0.4} scrollReactive={false} texSize="tex" colorReveal={colorMode} />
     </group>
   );
 }
